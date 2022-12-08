@@ -28,8 +28,7 @@ rsdata <- rsdata %>%
 flow <- rbind(flow, c(">14 days follow-up (to avoid immortal time bias*)", nrow(rsdata)))
 
 rsdata <- rsdata %>%
-  filter(sos_lm_arni14 != "Previous") %>%
-  mutate(sos_lm_arni14 = droplevels(sos_lm_arni14))
+  filter(sos_lm_previousarni == "No")
 flow <- rbind(flow, c("No previous ARNi use", nrow(rsdata)))
 
 rsdata <- rsdata %>%

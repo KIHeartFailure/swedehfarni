@@ -9,12 +9,24 @@ lmtmp <- left_join(
 
 lmtmp2 <- lmtmp %>%
   mutate(diff = as.numeric(EDATUM - shf_indexdtm)) %>%
+  filter(diff < 0) %>%
+  select(lopnr, shf_indexdtm, EDATUM, ATC)
+
+rsdata <- create_medvar(
+  atc = global_atcarni,
+  medname = "previousarni", cohortdata = rsdata401, meddata = lmtmp2, id = c("lopnr", "shf_indexdtm"),
+  metatime = "--1days",
+  valsclass = "fac"
+)
+
+lmtmp2 <- lmtmp %>%
+  mutate(diff = as.numeric(EDATUM - shf_indexdtm)) %>%
   filter(diff >= 0, diff <= 14) %>%
   select(lopnr, shf_indexdtm, EDATUM, ATC)
 
 rsdata <- create_medvar(
   atc = global_atcarni,
-  medname = "arni14", cohortdata = rsdata401, meddata = lmtmp2, id = c("lopnr", "shf_indexdtm"),
+  medname = "arni14", cohortdata = rsdata, meddata = lmtmp2, id = c("lopnr", "shf_indexdtm"),
   metatime = "0-14days",
   valsclass = "fac"
 )

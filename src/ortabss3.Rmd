@@ -159,7 +159,7 @@ forestdata <- forestdata %>%
 minmy <- round(exp(min(c(forestdata$lci_1, forestdata$lci_2), na.rm = T)), 2)
 maxmy <- ceiling(exp(max(c(forestdata$uci_1, forestdata$uci_2), na.rm = T)))
 
-add1 <- 4.5
+add1 <- 5
 cextext <- 0.6
 
 # c(bottom, left, top, right)

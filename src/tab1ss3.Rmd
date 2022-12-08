@@ -1,0 +1,121 @@
+```{r tab1ss3, cache=cacheon}
+
+tab1overall <- print(CreateTableOne(
+  vars = tabvars,
+  data = rsdata %>% filter(!is.na(shf_durationhf))
+),
+smd = FALSE,
+missing = TRUE,
+printToggle = FALSE,
+nonnormal = tabvars,
+catDigits = 1,
+contDigits = 1,
+noSpaces = TRUE,
+explain = FALSE
+)
+tab1overall <- as_tibble(cbind(var = rownames(tab1overall), tab1overall)) %>%
+  select(var, Missing)
+
+tab1hf1 <- print(CreateTableOne(
+  vars = tabvars,
+  strata = "sos_lm_arni14",
+  data = rsdata %>% filter(!is.na(shf_durationhf) & shf_durationhf == "<6mo")
+),
+smd = TRUE,
+missing = FALSE,
+printToggle = FALSE,
+nonnormal = tabvars,
+catDigits = 1,
+contDigits = 1,
+noSpaces = TRUE,
+explain = FALSE
+)
+tab1hf1 <- as_tibble(cbind(var = rownames(tab1hf1), tab1hf1)) %>%
+  select(-test)
+
+tab1hf2 <- print(CreateTableOne(
+  vars = tabvars,
+  strata = "sos_lm_arni14",
+  data = rsdata %>% filter(!is.na(shf_durationhf) & shf_durationhf == ">6mo")
+),
+smd = TRUE,
+missing = FALSE,
+printToggle = FALSE,
+nonnormal = tabvars,
+catDigits = 1,
+contDigits = 1,
+noSpaces = TRUE,
+explain = FALSE
+)
+tab1hf2 <- as_tibble(cbind(var = rownames(tab1hf2), tab1hf2)) %>%
+  select(-test)
+
+tab1 <- bind_cols(tab1overall, tab1hf1 %>% select(-var), tab1hf2 %>% select(-var))
+
+tab1 <- tab1 %>%
+  # remove = Yes
+  mutate(across(everything(), str_replace_all, fixed(" = Yes"), "")) %>%
+  # to get labs and units in place
+  mutate(
+    var_tmp = str_split(var, " = ", simplify = TRUE)[, 1],
+    val_tmp = str_split(var, " = ", simplify = TRUE)[, 2],
+    # if recoding or categorizing will still get org label
+    var_tmp2 = str_replace_all(var_tmp, "(_cat2|_cat)", ""),
+    # if shf/sos combination  will still get org label
+    var_tmp2 = str_replace_all(var_tmp2, "shf_sos_com_", "sos_com_")
+  )
+
+tab1 <- left_join(tab1,
+  meta_variables %>%
+    select(variable, label, unit),
+  by = c("var_tmp2" = "variable")
+) %>%
+  mutate(
+    Variable = coalesce(label, var_tmp),
+    Variable = if_else(!is.na(unit),
+      paste0(Variable, " (", unit, ")"),
+      Variable
+    ),
+    Variable = if_else(val_tmp != "",
+      paste0(Variable, " ", val_tmp),
+      Variable
+    )
+  )
+
+# footnotes
+tab1 <- tab1 %>%
+  mutate(
+    footnote1 = if_else(var_tmp %in% modvarspop3, footnote_marker_number(1), "")
+  ) %>%
+  unite(footnote, starts_with("footnote"), sep = "") %>%
+  mutate(
+    # so no probs
+    Variable = sanitize_text(Variable),
+    Variable = paste0(Variable, footnote),
+
+    # space in Latex output (fix this other way?)
+    Variable = sub("  ", ". ", Variable)
+  ) %>%
+  select(Variable, Missing:SMD...10)
+
+## fix in order to use escape = TRUE
+colnames(tab1) <- sanitize_text(c("Variable", "Missing (%)", rep(c("No ARNi", "ARNi", "p-value", "SMD"), 2)))
+
+write.xlsx(tab1, paste0("./output/tabs/Baseline characteristics_substrudy3", Sys.Date(), ".xlsx"), rowNames = FALSE)
+
+footnote(
+  default_kable(tab1,
+    font_size = 5,
+    caption = "Baseline characteristics - Substudy 3",
+    longtable = TRUE,
+    escape = FALSE
+  ) %>%
+    add_header_above(c(" " = 1, " " = 1, "HF duration <6 mo" = 4, "HF duration >=6 mo" = 4)),
+  general = c(
+    "Categorical variables are presented with n (%) and tested with chi-square test and continuous variables with median [q1-q3] and tested with Kruskal-Wallis test."
+  ),
+  number = c(
+    "Included in multiple imputation model and adjusted for in logistic/cox regression models."
+  )
+)
+```

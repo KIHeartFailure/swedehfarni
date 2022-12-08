@@ -1,0 +1,80 @@
+```{r overtime1, fig.cap="ARNi overtime alt I - Substudy 2"}
+
+cexmy <- 1.2
+# c(bottom, left, top, right) default c(5, 4, 4, 2) + 0.1.
+par(mar = c(4, 4, .5, 0.5) + 0.1)
+
+overtime <- overtime %>%
+  mutate(count = 1:n())
+
+plot(overtime %>% pull(count),
+  overtime %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[2],
+  lwd = 2,
+  axes = FALSE,
+  ylim = c(0, 55),
+  xlim = c(1, max(overtime$count) +.1),
+  ylab = "Percent",
+  xlab = "Year",
+  cex.lab = cexmy
+)
+axis(1, overtime %>% pull(count),
+  overtime %>% pull(year),
+  cex.axis = cexmy
+)
+
+text(overtime %>% pull(count),
+  overtime %>% pull(percent) + 4,
+  paste(fn(overtime %>% pull(percent), 0), "%"),
+  cex = cexmy
+)
+
+axis(2, c(seq(0, 50, 10), 55), c(seq(0, 50, 10), 100), las = 2, cex.axis = cexmy)
+plotrix::axis.break(2, 52.5, style = "slash")
+```
+
+```{r overtime2, fig.cap="ARNi overtime alt II - Substudy 2"}
+
+cexmy <- 1.2
+# c(bottom, left, top, right) default c(5, 4, 4, 2) + 0.1.
+par(mar = c(4, 4, .5, 0.5) + 0.1)
+
+overtime <- rsdata %>%
+  group_by(shf_indexyear) %>%
+  count(sos_lm_arni14) %>%
+  mutate(percent = n / sum(n) * 100) %>%
+  ungroup() %>%
+  filter(sos_lm_arni14 == "Yes") %>%
+  mutate(count = 1:n())
+
+plot(overtime %>% pull(count),
+  overtime %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[2],
+  lwd = 2,
+  axes = FALSE,
+  ylim = c(0, 55),
+  xlim = c(1, max(overtime$count) +.1),
+  ylab = "Percent",
+  xlab = "Year",
+  cex.lab = cexmy
+)
+axis(1, overtime %>% pull(count),
+  overtime %>% pull(shf_indexyear),
+  cex.axis = cexmy
+)
+
+text(overtime %>% pull(count),
+  overtime %>% pull(percent) + 4,
+  paste(fn(overtime %>% pull(percent), 0), "%"),
+  cex = cexmy
+)
+
+axis(2, c(seq(0, 50, 10), 55), c(seq(0, 50, 10), 100), las = 2, cex.axis = cexmy)
+plotrix::axis.break(2, 52.5, style = "slash")
+```

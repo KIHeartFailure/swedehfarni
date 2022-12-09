@@ -122,7 +122,7 @@ Missing data was imputed with multiple imputation (n = 10) using mice [@mice].
 Variables included in the model are indicated in 
 Table \ref{tab:tab1ss2}. Cvd/1hfh was included as the Nelson-Aalen estimator.
 
-## Propensity scores and matching - Substudy 1
+## Propensity scores and matching (Substudy 1)
 
 A propensity score for treatment was estimated for each patient with 
 logistic regression with ARNi as outcome for each of the 10 imputed datasets using the variables 
@@ -137,55 +137,27 @@ retained and balance between groups. Other matching ratios: `r matchingn`.
 
 \blandscape
 
-## Baseline characteristics
+# Results
+
+## Substudy 1
+
+### Baseline characteristics
 
 ```{r, child = "./src/tab1ss1.Rmd"}
 ```
 
-\clearpage 
-
-```{r, child = "./src/tab1ss2.Rmd"}
-```
-
-\clearpage 
-
-```{r, child = "./src/tab1ss3.Rmd"}
-```
-
 \elandscape
 
-Figure \ref{fig:overtime1} the denominator consists of persons that at the 
-middle of the year were present in SwedeHF with the specified inclusion/exclusion criteria 
-(so included in SwedeHF prior to 20xx-07-01 but not dead/emigrated as of 20xx-07-01). 
-The numerator consists of the number of patients of the above with at least one ARNi 
-dispension during that year. Note that this is not the substudy 2 population but 
-also include patients not on ARNi at inclusion.   
-
-Figure \ref{fig:overtime2} is the proportion of patients that, within 14 days of 
-their registration in SwedeHF, collect an ARNi prescription. 
-
-```{r, child = "./src/overtime.Rmd"}
-```
-
-## Associations with ARNi use
+### Associations with ARNi use
 
 Odds ratios are estimated using logistic regression with ARNi use as outcome. 
-For substudy 3 seperate logistic regressions were estimated for HF duration strata. 
-Outliers were investigated with Cook's distance and multicollinearity 
-with the variance inflation factor.
-=> XX. 
 
 ```{r, child = "./src/ortabss1.Rmd"}
 ```
 
-\clearpage 
-
-```{r, child = "./src/ortabss3.Rmd"}
-```
-
 \clearpage
 
-## Outcome analysis 
+### Outcome analysis 
 
 The following outcomes are considered: 
 
@@ -213,18 +185,9 @@ including the log of time as an offset in the model adjusting as above. For the 
 generalized linear mixed-effects model (GLMM) for the negative binomial family 
 with matched pair as a random effect was used. 
 
-For substudy 3 an interaction effect between HF duration and ARNi use was included in the model 
-thereby rendering the interpretation of subgroups but with the additional advantage of also testing for 
-differences in the association between ARNi and outcomes for different levels of duration of HF. 
-
 Data were censored at 2021-12-31, death from other causes than the event or emigration from Sweden. 
 
-The proportional hazards assumption was investigated using the scaled Schoenfeld 
-residuals (cox.zph in [@survival-package]) for the primary outcome. 
-Possible outliers were visually inspected by plotting the dfbetas. 
-=> XXXX. 
-
-Substudy 1, Overall cohort: The median (min-max) follow-up is 
+Overall cohort: The median (min-max) follow-up is 
 `r rsdata %>% 
 filter(shf_location == "In-patient") %>% 
 summarise(med = fn(median(sos_outtime_death / 365.25 * 12), dig = 1),
@@ -236,7 +199,7 @@ summarise(med = fn(median(sos_outtime_death / 365.25 * 12), dig = 1),
                                    summarise(sumpy = fn(sum(sos_outtime_death) / 365.25, dig = 0)) %>%
                                    pull(sumpy)` patient-years of follow-up.
 
-Substudy 1, Matched cohort: The median (min-max) follow-up is 
+Matched cohort: The median (min-max) follow-up is 
 `r rsdata  %>% 
 filter(!is.na(parpop1)) %>% 
 summarise(med = fn(median(sos_outtime_death / 365.25 * 12), dig = 1),
@@ -249,7 +212,92 @@ summarise(med = fn(median(sos_outtime_death / 365.25 * 12), dig = 1),
                                     summarise(sumpy = fn(sum(sos_outtime_death) / 365.25, dig = 0)) %>%
                                    pull(sumpy)` patient-years of follow-up.
 
-Substudy 3: The median (min-max) follow-up is 
+
+```{r, child = "./src/outtabss1.Rmd"}
+```
+
+```{r, child = "./src/kmss1.Rmd"}
+```
+
+\clearpage
+
+## Substudy 2
+
+### Baseline characteristics
+
+```{r, child = "./src/tab1ss2.Rmd"}
+```
+
+### ARNi use over time
+
+Figure \ref{fig:overtime1} the denominator consists of persons that at the 
+middle of the year were present in SwedeHF with the specified inclusion/exclusion criteria 
+(so included in SwedeHF prior to 20xx-07-01 but not dead/emigrated as of 20xx-07-01). 
+The numerator consists of the number of patients of the above with at least one ARNi 
+dispension during that year. Note that this is not the substudy 2 population but 
+also include patients not on ARNi at inclusion.   
+
+Figure \ref{fig:overtime2} is the proportion of patients that, within 14 days of 
+their registration in SwedeHF, collect an ARNi prescription. 
+
+```{r, child = "./src/overtime.Rmd"}
+```
+
+\blandscape
+
+## Substudy 3
+
+### Baseline characteristics
+
+```{r, child = "./src/tab1ss3.Rmd"}
+```
+\elandscape
+
+### Associations with ARNi use
+
+Odds ratios are estimated using logistic regression with ARNi use as outcome. 
+Separate logistic regressions were estimated for HF duration strata. 
+
+```{r, child = "./src/ortabss3.Rmd"}
+```
+
+\clearpage
+
+### Outcome analysis 
+
+The following outcomes are considered: 
+
+- Cardiovascular mortality/first HF hospitalization (primary endpoint)
+- Cardiovascular mortality
+- First HF hospitalization
+- Cardiovascular mortality/Total HF hospitalization
+- Total HF hospitalization
+- All-cause mortality
+
+Incidence per 1000 py was calculated with 95% Poisson confidence intervals. 
+
+Time to first events were presented with cumulative incidence curves and 
+the mean cumulative function (MCF) was used to depict the recurrent events. 
+
+Cox proportional hazards regressions were used to evaluate the association 
+between ARNi and time to first event, partly crude and partly adjusted for variables indicated in 
+Table \ref{tab:tab1ss1}. The variables were selected based on clinical relevance. 
+The association was also evaluated in the ps matched cohort 
+(so also adjusted for variables in Table \ref{tab:tab1ss1}). 
+In the matched cohort the matched pairs were modelled using a frailty term. 
+
+Recurrent events were model using a negative binomial regression 
+including the log of time as an offset in the model adjusting as above. For the matched cohort a 
+generalized linear mixed-effects model (GLMM) for the negative binomial family 
+with matched pair as a random effect was used. 
+
+An interaction effect between HF duration and ARNi use was included in the model 
+thereby rendering the interpretation of subgroups but with the additional advantage of also testing for 
+differences in the association between ARNi and outcomes for different levels of duration of HF. 
+
+Data were censored at 2021-12-31, death from other causes than the event or emigration from Sweden. 
+
+The median (min-max) follow-up is 
 `r rsdata %>% summarise(med = fn(median(sos_outtime_death / 365.25 * 12), dig = 1),
                                              min = fn(min(sos_outtime_death / 365.25 * 12), dig = 1),
                                              max = fn(max(sos_outtime_death / 365.25 * 12), dig = 1)) %>%
@@ -258,18 +306,10 @@ Substudy 3: The median (min-max) follow-up is
                                    `r rsdata %>% summarise(sumpy = fn(sum(sos_outtime_death) / 365.25, dig = 0)) %>%
                                    pull(sumpy)` patient-years of follow-up.
 
-```{r, child = "./src/kmss1.Rmd"}
+```{r, child = "./src/outtabss3.Rmd"}
 ```
-
-```{r, child = "./src/outtabss1.Rmd"}
-```
-
-\clearpage
 
 ```{r, child = "./src/kmss3.Rmd"}
-```
-
-```{r, child = "./src/outtabss3.Rmd"}
 ```
 
 \clearpage

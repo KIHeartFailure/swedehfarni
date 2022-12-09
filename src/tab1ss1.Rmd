@@ -41,6 +41,8 @@ tab1both <- bind_cols(tab1, tab1m %>% select(-var))
 tab1both <- tab1both %>%
   # remove = Yes
   mutate(across(everything(), str_replace_all, fixed(" = Yes"), "")) %>%
+  # replace NaN
+  mutate(across(everything(), str_replace_all, fixed("NaN"), "-")) %>%
   # to get labs and units in place
   mutate(
     var_tmp = str_split(var, " = ", simplify = TRUE)[, 1],

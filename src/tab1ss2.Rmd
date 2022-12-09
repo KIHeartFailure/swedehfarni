@@ -20,6 +20,8 @@ tab1 <- as_tibble(cbind(var = rownames(tab1), tab1)) %>%
 tab1 <- tab1 %>%
   # remove = Yes
   mutate(across(everything(), str_replace_all, fixed(" = Yes"), "")) %>%
+  # replace NaN
+  mutate(across(everything(), str_replace_all, fixed("NaN"), "-")) %>%
   # to get labs and units in place
   mutate(
     var_tmp = str_split(var, " = ", simplify = TRUE)[, 1],

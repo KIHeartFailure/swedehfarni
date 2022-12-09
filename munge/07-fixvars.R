@@ -85,8 +85,8 @@ rsdata <- rsdata %>%
         TRUE ~ 0
       ),
       levels = 0:1, labels = c(
-        "No previous HFH <1 year",
-        "Previous HFH <1 year"
+        "<1 year",
+        ">1 year/No"
       )
     ),
     sos_timeprevhosphf = if_else(shf_location == "In-patient", 0, sos_timeprevhosphf),

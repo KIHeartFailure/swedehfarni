@@ -9,7 +9,7 @@ output:
     dev: cairo_pdf
     fig_caption: yes
     fig_height: 7
-    fig_width: 7
+    fig_width: 8
     number_sections: yes
 link-citations: yes
 bibliography: references.bib
@@ -53,22 +53,6 @@ ProjectTemplate::reload.project()
 cacheon <- TRUE
 ```             
 
-# Comments/Questions
-
-For substudy 1 I did early initiation (within 14 d) vs late/no initiation (stat methods said 2 groups, aims said 3 groups). It becomes quite a bit cleaner with 2 groups...  and goes better together with the other substudies. Also, if do 3 groups, will need to do as suggested (require for example 3 mo follow-up), and then will miss early effects and loose patients. But let me know if should change. 
-
-SMD for a few variables (NYHA ect) still bit big for the matched pop for substudy 1. Think just have to accept. 
-
-For substudy 2 I changed the pop (according to sap are only pats treated with ARNi, think however you need patients to compare with (and in the denominator of the graphs))? Of course not possible with no arni in npr pop. 
-
-For substudy 3 I didn’t quite understand if this should be only ARNi users and comparing arni users with different hf durations (and removing all non-arni users) or as I did. Let me know if I should change.  
-
-Generally not sure how/if to adjust for previous arb/acei use. Not possible to adjust for current arb/acei use (everything freaks out since then you will not be on arni…). But would have though prev arb/acei would be good to include in models? But not sure how you want to interpret… defined pre arb/acei use as dispensed prescription within 1 year before index. This can of course be modified. 
-
-Categorization of target dose, not sure about the categorization, maybe <50, 50-74, 75-99, >=100 instead?
-
-Time since previous hf hosp, I put this to 0 if they are in-patients, or do you here want time since previous hfh for the hosp BEFORE the current hosp? 
-
 # Data handling
 
 ## Data source
@@ -77,13 +61,12 @@ SHFDB4, https://kiheartfailure.github.io/shfdb4/, v 4.0.1.
 
 ## Inclusion/exclusion criteria
 
-```{r flow}
-default_kable(flow, caption = "Flowchart", scale_down = F)
+```{r, child = "./src/flowchart.Rmd"}
 ```
 
-*if a patient dies immediately after the index visit he/she will not collect a drug prescribed at the index visit
-and thereby be defined as a ARNi initiation user. Throughout, the index date is moved 14 days forward.
-
+*If a patient dies immediately after the index visit he/she will not collect a drug prescribed at the index visit
+and thereby be defined as a ARNi initiation user. Throughout, the index date is 
+moved 14 days forward or 30 days (the latter for substudy 1, 3 groups).
 
 First patient in: `r min(rsdata$shf_indexdtm)` and last patient in: `r max(rsdata$shf_indexdtm)`.  
 
@@ -105,6 +88,8 @@ All analyses were performed using `r sessionInfo()$R.version$version.string` [@r
 The level of significance is set to 5%, two-sided. No adjustment for multiple 
 comparisons were made and therefore the results should be viewed with some care.
 
+\clearpage
+
 ## Created variables
 
 ```{r atc}
@@ -112,21 +97,42 @@ default_kable(metalm, caption = "Treatments from Prescribed Drug Register", scal
 ```
 
 ```{r td}
-footnote(default_kable(targetdose, caption = "Daily target doses", scale_down = F), 
-         general = "Substances with - are set to missing for target doses.")
+footnote(default_kable(targetdose, caption = "Daily target doses", scale_down = F),
+  general = "Substances with - are set to missing for target doses."
+)
 ```
+
+ARNi use is defined as early initiation (within 14 days) if not otherwise specified. 
 
 ## Missing data
 
 Missing data was imputed with multiple imputation (n = 10) using mice [@mice]. 
 Variables included in the model are indicated in 
-Table \ref{tab:tab1ss2}. Cvd/1hfh was included as the Nelson-Aalen estimator.
+Table \ref{tab:tab1ss12}. Cvd/1hfh was included as the Nelson-Aalen estimator. 
+The same imputated dataset is used for all substudies. 
 
-## Propensity scores and matching (Substudy 1)
+\clearpage
+
+# Results
+
+For substudy 1 all analyses are performed partly for 2 groups 
+(early initiation of ARNI within 14 days, no initiation/initiation>14 days) and partly
+for 3 groups (early initiation of ARNI within 14 days, initiation within 15-90 days, 
+no initiation/initiation>90 days).
+
+## Substudy 1 - 2 groups
+
+### Aims
+
+1.	To compare outcomes in patients who initiate ARNI during hospitalization (within 14 days) 
+vs. those who initiate ARNi after 14 days vs. those who do not initiate; 
+2.	To assess independent predictors of early initiation.
+
+### Propensity scores and matching
 
 A propensity score for treatment was estimated for each patient with 
 logistic regression with ARNi as outcome for each of the 10 imputed datasets using the variables 
-indicated in Table \ref{tab:tab1ss2}. 1:1 matching without replacement [@match] 
+indicated in Table \ref{tab:tab1ss12}. 1:1 matching without replacement [@match] 
 was thereafter performed on the average of the resulting 10 ps [@psmatch]. Matching was 
 allowed if the propensity score differed by 0.01 or less. The ability of the ps 
 matching to balance the baseline characteristics was assessed by 
@@ -137,22 +143,19 @@ retained and balance between groups. Other matching ratios: `r matchingn`.
 
 \blandscape
 
-# Results
-
-## Substudy 1
-
 ### Baseline characteristics
 
-```{r, child = "./src/tab1ss1.Rmd"}
+```{r, child = "./src/tab1ss12.Rmd"}
 ```
 
 \elandscape
 
 ### Associations with ARNi use
 
-Odds ratios are estimated using logistic regression with ARNi use as outcome. 
+Odds ratios (95% CI) were estimated using logistic regression with ARNi use as outcome. 
+Variables selected are indicated in Table \ref{tab:tab1ss12}.
 
-```{r, child = "./src/ortabss1.Rmd"}
+```{r, child = "./src/ortabss12.Rmd"}
 ```
 
 \clearpage
@@ -175,9 +178,9 @@ the mean cumulative function (MCF) was used to depict the recurrent events.
 
 Cox proportional hazards regressions were used to evaluate the association 
 between ARNi and time to first event, partly crude and partly adjusted for variables indicated in 
-Table \ref{tab:tab1ss1}. The variables were selected based on clinical relevance. 
+Table \ref{tab:tab1ss12}. The variables were selected based on clinical relevance. 
 The association was also evaluated in the ps matched cohort 
-(so also adjusted for variables in Table \ref{tab:tab1ss1}). 
+(so also adjusted for variables in Table \ref{tab:tab1ss12}). 
 In the matched cohort the matched pairs were modelled using a frailty term. 
 
 Recurrent events were model using a negative binomial regression 
@@ -213,32 +216,115 @@ summarise(med = fn(median(sos_outtime_death / 365.25 * 12), dig = 1),
                                    pull(sumpy)` patient-years of follow-up.
 
 
-```{r, child = "./src/outtabss1.Rmd"}
+```{r, child = "./src/kmss12.Rmd"}
 ```
 
-```{r, child = "./src/kmss1.Rmd"}
+```{r, child = "./src/outtabss12.Rmd"}
+```
+
+\clearpage
+
+## Substudy 1 - 3 groups
+
+### Aims
+
+1.	To compare outcomes in patients who initiate ARNI during hospitalization (within 14 days) 
+vs. those who initiate ARNi after 14 days vs. those who do not initiate; 
+2.	To assess independent predictors of early initiation.
+
+### Baseline characteristics
+
+```{r, child = "./src/tab1ss13.Rmd"}
+```
+
+\clearpage
+
+### Associations with ARNi use
+
+Odds ratios (95% CI) were estimated using logistic regression with ARNi use as outcome. 
+Variables selected are indicated in Table \ref{tab:tab1ss13}.
+
+```{r, child = "./src/ortabss13.Rmd"}
+```
+
+\clearpage
+
+### Outcome analysis 
+
+The following outcomes are considered: 
+
+- Cardiovascular mortality/first HF hospitalization (primary endpoint)
+- Cardiovascular mortality
+- First HF hospitalization
+- Cardiovascular mortality/Total HF hospitalization
+- Total HF hospitalization
+- All-cause mortality
+
+Incidence per 1000 py was calculated with 95% Poisson confidence intervals. 
+
+Time to first events were presented with cumulative incidence curves and 
+the mean cumulative function (MCF) was used to depict the recurrent events. 
+
+Cox proportional hazards regressions were used to evaluate the association 
+between ARNi and time to first event, partly crude and partly adjusted for variables indicated in 
+Table \ref{tab:tab1ss13}. The variables were selected based on clinical relevance. 
+
+Recurrent events were model using a negative binomial regression 
+including the log of time as an offset in the model adjusting as above. 
+
+Data were censored at 2021-12-31, death from other causes than the event or emigration from Sweden. 
+
+Overall cohort: The median (min-max) follow-up is 
+`r rsdata %>% 
+filter(pop13) %>% 
+summarise(med = fn(median(sos_outtime_death30 / 365.25 * 12), dig = 1),
+                                             min = fn(min(sos_outtime_death30 / 365.25 * 12), dig = 1),
+                                             max = fn(max(sos_outtime_death30 / 365.25 * 12), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", min, "-", max, ")")) %>%
+                                   pull(out)` months for a total of 
+                                   `r rsdata  %>% filter(pop13) %>% 
+                                   summarise(sumpy = fn(sum(sos_outtime_death30) / 365.25, dig = 0)) %>%
+                                   pull(sumpy)` patient-years of follow-up.
+
+```{r, child = "./src/outtabss13.Rmd"}
+```
+
+```{r, child = "./src/kmss13.Rmd"}
 ```
 
 \clearpage
 
 ## Substudy 2
 
+### Aims
+
+1.	Definition of timeline and characteristics of patients (including concomitant treatments and
+their doses, e.g. ACEi/ARB, SGLT2i, MRA, BB) initiated with ARNi with focus on initiatiation
+during hospitalization vs outpatient care;  
+2.	Evaluation of the current status of implementation of use of sacubitril/valsartan in clinical
+practice (both inpatients/outpatients) 
+
+
 ### Baseline characteristics
 
 ```{r, child = "./src/tab1ss2.Rmd"}
 ```
 
+\clearpage
+
 ### ARNi use over time
 
-Figure \ref{fig:overtime1} the denominator consists of persons that at the 
+In Figure \ref{fig:overtime-1} the denominator consists of persons that at the 
 middle of the year were present in SwedeHF with the specified inclusion/exclusion criteria 
 (so included in SwedeHF prior to 20xx-07-01 but not dead/emigrated as of 20xx-07-01). 
 The numerator consists of the number of patients of the above with at least one ARNi 
 dispension during that year. Note that this is not the substudy 2 population but 
 also include patients not on ARNi at inclusion.   
 
-Figure \ref{fig:overtime2} is the proportion of patients that, within 14 days of 
-their registration in SwedeHF, collect an ARNi prescription. 
+In Figure \ref{fig:overtime-2} the proportion of patients that, within 14 days of 
+their registration in SwedeHF, collect an ARNi prescription, are presented. 
+
+For both Figures non-ARNi users are included in the denominator.
 
 ```{r, child = "./src/overtime.Rmd"}
 ```
@@ -247,16 +333,23 @@ their registration in SwedeHF, collect an ARNi prescription.
 
 ## Substudy 3
 
+### Aims
+
+1.	To compare characteristics and outcome of patients with HFrEF according to the timing of ARNi initiation (new onset HF vs history of HF < 6 months vs HF duration $\geq$ 6 months);
+2.	To assess predictors of ARNi initiation across strata of HF duration 
+
 ### Baseline characteristics
 
 ```{r, child = "./src/tab1ss3.Rmd"}
 ```
+
 \elandscape
 
 ### Associations with ARNi use
 
-Odds ratios are estimated using logistic regression with ARNi use as outcome. 
-Separate logistic regressions were estimated for HF duration strata. 
+Odds ratios (95% CI) were estimated using logistic regression with ARNi use as outcome. 
+Separate logistic regressions were estimated for HF duration strata. Variables 
+selected are indicated in Table \ref{tab:tab1ss3}.
 
 ```{r, child = "./src/ortabss3.Rmd"}
 ```
@@ -281,15 +374,10 @@ the mean cumulative function (MCF) was used to depict the recurrent events.
 
 Cox proportional hazards regressions were used to evaluate the association 
 between ARNi and time to first event, partly crude and partly adjusted for variables indicated in 
-Table \ref{tab:tab1ss1}. The variables were selected based on clinical relevance. 
-The association was also evaluated in the ps matched cohort 
-(so also adjusted for variables in Table \ref{tab:tab1ss1}). 
-In the matched cohort the matched pairs were modelled using a frailty term. 
+Table \ref{tab:tab1ss3}. The variables were selected based on clinical relevance. 
 
 Recurrent events were model using a negative binomial regression 
-including the log of time as an offset in the model adjusting as above. For the matched cohort a 
-generalized linear mixed-effects model (GLMM) for the negative binomial family 
-with matched pair as a random effect was used. 
+including the log of time as an offset in the model adjusting as above. 
 
 An interaction effect between HF duration and ARNi use was included in the model 
 thereby rendering the interpretation of subgroups but with the additional advantage of also testing for 
@@ -306,10 +394,10 @@ The median (min-max) follow-up is
                                    `r rsdata %>% summarise(sumpy = fn(sum(sos_outtime_death) / 365.25, dig = 0)) %>%
                                    pull(sumpy)` patient-years of follow-up.
 
-```{r, child = "./src/outtabss3.Rmd"}
+```{r, child = "./src/kmss3.Rmd"}
 ```
 
-```{r, child = "./src/kmss3.Rmd"}
+```{r, child = "./src/outtabss3.Rmd"}
 ```
 
 \clearpage

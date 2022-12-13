@@ -1,80 +1,188 @@
-```{r overtime1, fig.cap="ARNi overtime alt I - Substudy 2"}
+```{r overtime, cache = cacheon, fig.cap = "ARNi overtime - Substudy 2", fig.show='hold', out.width="50%", fig.subcap=c('Alternative I', 'Alternative II'), fig.ncol=2}
 
-cexmy <- 1.2
+cexmy <- 1.5
 # c(bottom, left, top, right) default c(5, 4, 4, 2) + 0.1.
 par(mar = c(4, 4, .5, 0.5) + 0.1)
 
 overtime <- overtime %>%
-  mutate(count = 1:n())
+  group_by(pop) %>%
+  mutate(count = 1:n()) %>%
+  ungroup()
 
-plot(overtime %>% pull(count),
-  overtime %>% pull(percent),
+plot(overtime %>% filter(pop == "All") %>% pull(count),
+  overtime %>% filter(pop == "All") %>% pull(percent),
   type = "b",
   pch = 19,
   lty = 1,
-  col = global_cols[2],
-  lwd = 2,
+  col = global_cols[1],
+  lwd = 3,
+  cex = 1.5,
   axes = FALSE,
-  ylim = c(0, 55),
-  xlim = c(1, max(overtime$count) +.1),
+  ylim = c(0, 35),
+  xlim = c(1, max(overtime$count) + .1),
   ylab = "Percent",
   xlab = "Year",
   cex.lab = cexmy
 )
-axis(1, overtime %>% pull(count),
-  overtime %>% pull(year),
-  cex.axis = cexmy
-)
+# text(overtime %>% filter(pop == "All") %>% pull(count),
+#  overtime %>% filter(pop == "All") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "All") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
 
-text(overtime %>% pull(count),
-  overtime %>% pull(percent) + 4,
-  paste(fn(overtime %>% pull(percent), 0), "%"),
+matplot(overtime %>% filter(pop == "In-patient") %>% pull(count),
+  overtime %>% filter(pop == "In-patient") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[3],
+  lwd = 3,
+  cex = 1.5,
+  add = T
+)
+# text(overtime %>% filter(pop == "In-patient") %>% pull(count),
+#  overtime %>% filter(pop == "In-patient") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "In-patient") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+matplot(overtime %>% filter(pop == "Out-patient") %>% pull(count),
+  overtime %>% filter(pop == "Out-patient") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[5],
+  lwd = 3,
+  cex = 1.5,
+  add = T
+)
+# text(overtime %>% filter(pop == "Out-patient") %>% pull(count),
+#  overtime %>% filter(pop == "Out-patient") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "Out-patient") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+legend(
+  x = 1.1, y = 35, c("Overall", "In-patient", "Out-patient"),
+  col = global_cols[c(1, 3, 5)], lwd = 2, pch = 19, bty = "n",
   cex = cexmy
 )
 
-axis(2, c(seq(0, 50, 10), 55), c(seq(0, 50, 10), 100), las = 2, cex.axis = cexmy)
-plotrix::axis.break(2, 52.5, style = "slash")
-```
+axis(1, c(0, overtime %>% filter(pop == "All") %>% pull(count)),
+  c(NA, overtime %>% filter(pop == "All") %>% pull(year)),
+  cex.axis = cexmy
+)
 
-```{r overtime2, fig.cap="ARNi overtime alt II - Substudy 2"}
+axis(2, c(-100, seq(0, 30, 10), 35), c(NA, seq(0, 30, 10), 100), las = 2, cex.axis = cexmy)
+plotrix::axis.break(2, 32.5, style = "slash")
 
-cexmy <- 1.2
 # c(bottom, left, top, right) default c(5, 4, 4, 2) + 0.1.
 par(mar = c(4, 4, .5, 0.5) + 0.1)
 
-overtime <- rsdata %>%
+overtimers <- rsdata %>%
   group_by(shf_indexyear) %>%
   count(sos_lm_arni14) %>%
-  mutate(percent = n / sum(n) * 100) %>%
+  mutate(
+    den = sum(n),
+    percent = n / den * 100,
+    pop = "All"
+  ) %>%
   ungroup() %>%
   filter(sos_lm_arni14 == "Yes") %>%
   mutate(count = 1:n())
 
-plot(overtime %>% pull(count),
-  overtime %>% pull(percent),
+overtimelocation <- rsdata %>%
+  group_by(shf_indexyear, shf_location) %>%
+  count(sos_lm_arni14) %>%
+  mutate(
+    den = sum(n),
+    percent = n / den * 100
+  ) %>%
+  ungroup() %>%
+  filter(sos_lm_arni14 == "Yes") %>%
+  group_by(shf_location) %>%
+  mutate(
+    count = 1:n(),
+    pop = as.factor(shf_location)
+  ) %>%
+  ungroup()
+
+plot(overtimers %>% pull(count),
+  overtimers %>% pull(percent),
   type = "b",
   pch = 19,
   lty = 1,
-  col = global_cols[2],
-  lwd = 2,
+  col = global_cols[1],
+  lwd = 3,
+  cex = 1.5,
   axes = FALSE,
-  ylim = c(0, 55),
-  xlim = c(1, max(overtime$count) +.1),
+  ylim = c(0, 35),
+  xlim = c(1, max(overtime$count) + .1),
   ylab = "Percent",
   xlab = "Year",
   cex.lab = cexmy
 )
-axis(1, overtime %>% pull(count),
-  overtime %>% pull(shf_indexyear),
-  cex.axis = cexmy
+matplot(overtimelocation %>% filter(pop == "In-patient") %>% pull(count),
+  overtimelocation %>% filter(pop == "In-patient") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[3],
+  lwd = 3,
+  cex = 1.5,
+  add = T
+)
+matplot(overtimelocation %>% filter(pop == "Out-patient") %>% pull(count),
+  overtimelocation %>% filter(pop == "Out-patient") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[5],
+  lwd = 3,
+  cex = 1.5,
+  add = T
 )
 
-text(overtime %>% pull(count),
-  overtime %>% pull(percent) + 4,
-  paste(fn(overtime %>% pull(percent), 0), "%"),
+legend(
+  x = 1.1, y = 35, c("Overall", "In-patient", "Out-patient"),
+  col = global_cols[c(1, 3, 5)], lwd = 2, pch = 19, bty = "n",
   cex = cexmy
 )
 
-axis(2, c(seq(0, 50, 10), 55), c(seq(0, 50, 10), 100), las = 2, cex.axis = cexmy)
-plotrix::axis.break(2, 52.5, style = "slash")
+axis(1, c(0, overtimers %>% pull(count)),
+  c(NA, overtimers %>% pull(shf_indexyear)),
+  cex.axis = cexmy
+)
+
+# text(overtime %>% pull(count),
+#  overtime %>% pull(percent) + 4,
+#  paste(fn(overtime %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+axis(2, c(-100, seq(0, 30, 10), 35), c(NA, seq(0, 30, 10), 100), las = 2, cex.axis = cexmy)
+plotrix::axis.break(2, 32.5, style = "slash")
+```
+
+```{r overtimetab, cache = cacheon}
+
+overtime <- overtime %>%
+  mutate(dn = paste0(num, "/", den, " (", fn(percent, 1), "%)")) %>%
+  select(year, pop, dn) %>%
+  rename(Year = year) %>%
+  pivot_wider(names_from = pop, values_from = dn)
+
+default_kable(overtime, caption = "Numbers for Figure - Alternative I", scale_down = F)
+
+overtimerstab <- bind_rows(
+  overtimers,
+  overtimelocation
+) %>%
+  mutate(dn = paste0(n, "/", den, " (", fn(percent, 1), "%)")) %>%
+  select(shf_indexyear, pop, dn) %>%
+  rename(Year = shf_indexyear) %>%
+  arrange(Year, pop) %>%
+  pivot_wider(names_from = pop, values_from = dn)
+
+default_kable(overtimerstab, caption = "Numbers for Figure - Alternative II", scale_down = F)
 ```

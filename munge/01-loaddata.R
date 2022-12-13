@@ -3,33 +3,23 @@ meta_variables <- read.xlsx("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm
 meta_variables <- meta_variables %>% select(-`description/comment`)
 meta_variablesadd <- data.frame(
   "variable" = c(
-    "shf_sos_prevhfh",
     "sos_lm_previousrasi",
     "shf_rasi",
-    "shf_rasidosetarget_cat",
-    "shf_mradosetarget_cat",
-    "shf_bbldosetarget_cat",
-    "shf_sglt2dosetarget_cat",
     "shf_rasidosetarget",
     "shf_mradosetarget",
     "shf_bbldosetarget",
     "shf_sglt2dosetarget"
   ),
   "label" = c(
-    "Previous HFH",
     "Previous ACEi/ARB",
     "ACEi/ARB",
     "Target dose ACEi/ARB",
     "Target dose MRA",
     "Target dose Beta-blocker",
-    "Target dose SGLT2i",
-    "Target dose ACEi/ARB",
-    "Target dose MRA",
-    "Target dose Beta-blocker",
     "Target dose SGLT2i"
   ),
-  "unit" = rep(NA, 11),
-  "valid" = rep(NA, 11)
+  "unit" = rep(NA, 6),
+  "valid" = rep(NA, 6)
 )
 
 meta_variables <- rbind(meta_variables, meta_variablesadd)

@@ -63,4 +63,6 @@ for (i in seq_along(modvars)) {
 }
 
 imprsdatapop1 <- miceadds::subset_datlist(imprsdata, expr_subset = rsdata$shf_location == "In-patient")
+imprsdatapop13 <- miceadds::subset_datlist(imprsdata, expr_subset = rsdata$pop13)
+imprsdatapop2 <- miceadds::subset_datlist(imprsdata, expr_subset = rsdata$sos_lmarni14 == "Yes")
 imprsdatapop3 <- miceadds::subset_datlist(imprsdata, expr_subset = !is.na(rsdata$shf_durationhf))

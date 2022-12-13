@@ -11,8 +11,9 @@ tabvars <- c(
 
   # organizational
   "shf_location",
-  "shf_sos_prevhfh",
   "sos_timeprevhosphf",
+  "sos_timeprevhosphf_cat",
+  "sos_timeprevhosphf_cat2",
   "shf_followuphfunit", "shf_followuplocation_cat",
 
   # clinical factors and lab measurments
@@ -80,11 +81,14 @@ tabvars <- c(
   "shf_qol_cat"
 )
 
+tabvarspop1 <- tabvars[!tabvars %in% c("shf_location")]
+tabvarspop3 <- tabvars[!tabvars %in% c("shf_durationhf")]
+
 # vars fox log reg and cox reg
 tabvars_not_in_mod <- c(
   "shf_age",
-  "shf_sos_prevhfh",
   "sos_timeprevhosphf",
+  "sos_timeprevhosphf_cat",
   "shf_nyha",
   "shf_bpsys",
   "shf_bpdia",
@@ -111,4 +115,4 @@ tabvars_not_in_mod <- c(
 modvars <- tabvars[!(tabvars %in% tabvars_not_in_mod)]
 
 modvarspop1 <- modvars[!modvars %in% c("shf_location")]
-modvarspop3 <- modvars[!modvars %in% c("shf_durationhf")]
+modvarspop3 <- modvars[!modvars %in% c("shf_durationhf", "sos_timeprevhosphf_cat2")]

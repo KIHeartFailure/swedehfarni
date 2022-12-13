@@ -1,0 +1,185 @@
+```{r kmfuncss13, cache=cacheon}
+
+kmfunc <- function(time, event, eventmod = NULL, eventname, ymax = 1, rep = FALSE) {
+  levs <- levels(rsdata$sos_lm_arni3)
+  fits <- survfit(formula(paste0("Surv(", time, ",", event, "== 'Yes') ~ sos_lm_arni3")),
+    data = rsdata %>% filter(pop13)
+  )
+
+  if (!rep) {
+    # cox model
+    amod <- with(imprsdatapop13, coxph(formula(paste0(
+      "Surv(", time, ",", event, " == 'Yes') ~ sos_lm_arni3 +",
+      paste(modvarspop1, collapse = " + ")
+    ))))
+
+    asmod <- summary(pool(amod))
+
+    hrprint <- c("ref", paste0(
+      fn(exp(asmod$estimate[1:2]), dig = 2),
+      " (", fn(exp(asmod$estimate[1:2] - global_z05 * asmod$std.error[1:2]), dig = 2),
+      "-", fn(exp(asmod$estimate[1:2] + global_z05 * asmod$std.error[1:2]), dig = 2), "), ",
+      fn(asmod$p.value[1:2], dig = 3, p = TRUE)
+    ))
+  }
+  if (rep) {
+    amod <- with(imprsdatapop13, glm.nb(formula(paste0(
+      eventmod, " ~ sos_lm_arni3 + offset(log(sos_outtime_death30)) +",
+      paste(modvarspop1, collapse = " + ")
+    ))))
+
+    asmod <- summary(pool(amod))
+
+    hrprint <- c("ref", paste0(
+      fn(exp(asmod$estimate[2:3]), dig = 2),
+      " (", fn(exp(asmod$estimate[2:3] - global_z05 * asmod$std.error[2:3]), dig = 2),
+      "-", fn(exp(asmod$estimate[2:3] + global_z05 * asmod$std.error[2:3]), dig = 2), "), ",
+      fn(asmod$p.value[2:3], dig = 3, p = TRUE)
+    ))
+
+    fitsr <- mcf(formula(paste0("Recur(sos_outtime, lopnr, ", event, " == 1) ~ sos_lm_arni3")),
+      data = rsdatarecpop13 %>% filter(pop13)
+    )
+  }
+
+  # c(bottom, left, top, right)
+  cexmy <- 1.2
+  par(mar = c(7.5, 11, 1, 1.5) + 0.1)
+
+  if (!rep) {
+    plots <- plot(fits,
+      fun = "event",
+      ylab = paste0(eventname, " (%)"),
+      yscale = 100,
+      xscale = 365,
+      col = global_cols[c(1, 3, 5)],
+      mark.time = FALSE,
+      bty = "n",
+      xlim = c(0, 365 * 4),
+      ylim = c(0, ymax + 0.05),
+      xlab = "Follow-up (years)",
+      cex.lab = cexmy,
+      axes = F,
+      lwd = 2.5,
+      lty = 1,
+      xaxs = "i", yaxs = "i"
+    )
+    axis(2, seq(0, ymax + 0.05, 0.05), c(seq(0, ymax * 100, 5), 100), las = 2, cex.axis = cexmy)
+    plotrix::axis.break(2, ymax + 0.025, style = "slash")
+  }
+
+  if (rep) {
+    plot(fitsr@MCF$time[fitsr@MCF["sos_lm_arni3"] == levs[1]],
+      fitsr@MCF$MCF[fitsr@MCF["sos_lm_arni3"] == levs[1]],
+      type = "l",
+      ylab = paste0("Mean cumulative ", eventname, " (per 100 patients)"),
+      col = global_cols[1],
+      xlim = c(0, 365 * 4),
+      ylim = c(0, ymax + 0.05),
+      xlab = "Follow-up (years)",
+      cex.lab = cexmy,
+      axes = F,
+      lwd = 2.5,
+      lty = 1,
+      xaxs = "i", yaxs = "i"
+    )
+    lines(fitsr@MCF$time[fitsr@MCF["sos_lm_arni3"] == levs[2]],
+      fitsr@MCF$MCF[fitsr@MCF["sos_lm_arni3"] == levs[2]],
+      col = global_cols[3],
+      lwd = 2.5,
+      lty = 1
+    )
+    lines(fitsr@MCF$time[fitsr@MCF["sos_lm_arni3"] == levs[3]],
+      fitsr@MCF$MCF[fitsr@MCF["sos_lm_arni3"] == levs[3]],
+      col = global_cols[5],
+      lwd = 2.5,
+      lty = 1
+    )
+
+    axis(2, seq(0, ymax, 0.5), seq(0, ymax * 100, 50), las = 2, cex.axis = cexmy)
+  }
+
+  axis(1, at = seq(0, 4) * 365, seq(0, 4), cex.axis = cexmy)
+
+  legend(
+    x = 0.5, y = ymax + 0.05, bty = "n", c("", levs),
+    col = c("white", global_cols[c(1, 3, 5)]), cex = cexmy, lwd = 2.5, lty = c(1, 1, 1, 1),
+    text.col = c("white", global_cols[c(1, 3, 5)])
+  )
+  if (rep) {rname <- "RR"}
+  if (!rep) {rname <- "HR"}
+  legend(
+    x = 2.35 * 365, y = ymax + 0.05, c(paste0("Adjusted ", rname, " (95% CI), p-value"), hrprint),
+    cex = cexmy, adj = 0.5, bty = "n"
+  )
+
+  mtext("No. at risk", side = 1, line = 3.7, at = -550, adj = 0, cex = cexmy, font = 2)
+  mtext(levs[1], side = 1, line = 4.7, at = -550, adj = 0, cex = cexmy, col = global_cols[1])
+  mtext(levs[2], side = 1, line = 5.7, at = -550, adj = 0, cex = cexmy, col = global_cols[3])
+  mtext(levs[3], side = 1, line = 6.7, at = -550, adj = 0, cex = cexmy, col = global_cols[5])
+
+  nrisk <- summary(fits, seq(0, 4) * 365, extend = T)
+
+  axis(1,
+    at = seq(0, 4) * 365, labels = nrisk$n.risk[nrisk$strata == paste0("sos_lm_arni3=", levs[1])],
+    line = 3.7, tick = FALSE, cex.axis = cexmy
+  )
+  axis(1,
+    at = seq(0, 4) * 365, labels = nrisk$n.risk[nrisk$strata == paste0("sos_lm_arni3=", levs[2])],
+    line = 4.7, tick = FALSE, cex.axis = cexmy
+  )
+  axis(1,
+    at = seq(0, 4) * 365, labels = nrisk$n.risk[nrisk$strata == paste0("sos_lm_arni3=", levs[3])],
+    line = 5.7, tick = FALSE, cex.axis = cexmy
+  )
+}
+```
+
+```{r kmss13, cache = cacheon, dependson="kmfuncss13", fig.cap = "KM/MCF - Substudy 1, 3 groups", fig.show='hold', out.width="50%", fig.subcap=c('CVD/First HFH', 'CVD', 'First HFH', 'CVD/Total HFH', 'Total HFH', 'All-cause mortality'), fig.ncol=2}
+
+kmfunc(
+  time = "sos_outtime_hosphf30",
+  event = "sos_out_deathcvhosphf30",
+  eventname = "CVD/First HFH",
+  ymax = 0.8
+)
+
+kmfunc(
+  time = "sos_outtime_death30",
+  event = "sos_out_deathcv",
+  eventname = "CVD",
+  ymax = 0.6
+)
+
+kmfunc(
+  time = "sos_outtime_hosphf30",
+  event = "sos_out_hosphf30",
+  eventname = "First HFH",
+  ymax = 0.6
+)
+
+kmfunc(
+  event = "sos_out_deathcvhosphf",
+  eventmod = "sos_out_countdeathcvhosphf30",
+  time = "sos_outtime_death30",
+  eventname = "CVD/HFH",
+  ymax = 2.5,
+  rep = T
+)
+
+kmfunc(
+  event = "sos_out_hosphf",
+  eventmod = "sos_out_counthosphf30",
+  time = "sos_outtime_death30",
+  eventname = "HFH",
+  ymax = 2.5,
+  rep = T
+)
+
+kmfunc(
+  time = "sos_outtime_death30",
+  event = "sos_out_death",
+  eventname = "All-cause mortality",
+  ymax = 0.6
+)
+```

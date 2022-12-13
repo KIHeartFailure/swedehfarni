@@ -1,4 +1,4 @@
-```{r ortabss1, cache=cacheon}
+```{r ortabss12, cache=cacheon}
 
 # mult
 ormod <- with(imprsdatapop1, glm(formula(paste0("sos_lm_arni14 == 'Yes' ~ ", paste(modvarspop1, collapse = " + "))),
@@ -81,7 +81,7 @@ predall <- left_join(predall,
     Variable == "shf_locationIn-patient" ~ "In-patient",
     Variable == "shf_followuplocation_catHospital" ~ "Follow-up hospital vs primary care/other",
     Variable == "shf_ef<30" ~ "EF (%) <30 vs 30-39",
-    Variable == "shf_durationhf>6mo" ~ "Duration HF (mo) >=6 vs <6",
+    Variable == "shf_durationhf>6mo" ~ "Duration HF (months) >=6 vs <6",
     Variable == "shf_nyha_catIII-IV" ~ "NYHA class III-IV vs I-II",
     Variable == "shf_bmi_cat>=30" ~ "BMI (kg/m2) >=30 vs <30",
     Variable == "shf_map_cat>90" ~ "MAP >90 vs <=90",
@@ -97,6 +97,8 @@ predall <- left_join(predall,
     Variable == "scb_dispincome_cat>=median" ~ "Income >=median vs <median",
     Variable == "shf_indexyear" ~ "Year of inclusion",
     Variable == "sos_lm_previousrasi" ~ "Previous ACEi/ARB",
+    Variable == "sos_timeprevhosphf_cat2<=365" ~ "Previous HFH (days) <=365 vs No", 
+    Variable == "sos_timeprevhosphf_cat2>365" ~ "Previous HFH (days) >365 vs No", 
     TRUE ~ Variable
   ))
 
@@ -106,18 +108,18 @@ predallprint <- predall %>%
 colnames(predallprint) <- c("Variable", rep(c("OR (95% CI)", "p-value"), 2))
 
 write.xlsx(predallprint, paste0(
-  "./output/tabs/Associations between ARNi use and characteristics_substudy1_", Sys.Date(), ".xlsx"
+  "./output/tabs/Associations between ARNi use and characteristics_substudy12_", Sys.Date(), ".xlsx"
 ), rowNames = FALSE, overwrite = TRUE)
 
 default_kable(predallprint,
   font_size = 6,
-  caption = "Associations between ARNi use and characteristics - Substudy 1",
+  caption = "Associations between ARNi use and characteristics - Substudy 1, 2 groups",
   escape = T
 ) %>%
   add_header_above(c(" " = 1, "Crude" = 2, "Adjusted" = 2))
 ```
 
-```{r orforestss1, cache=cacheon, dependson=c("ortabss1"), fig.width=5, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics - Substudy 1"}
+```{r orforestss12, cache=cacheon, dependson=c("ortabss12"), fig.width=5, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics - Substudy 1, 2 groups"}
 
 forestdata <- predall %>%
   mutate(across(c("logor.y", "lci.y", "uci.y"), as.numeric)) %>%
@@ -143,7 +145,7 @@ minmy <- round(exp(min(forestdata$lci, na.rm = T)), 2)
 maxmy <- ceiling(exp(max(forestdata$uci, na.rm = T)))
 
 # c(bottom, left, top, right)
-par(mar = c(4, 21, 0, 0.5) + 0.2)
+par(mar = c(4, 20, 0, 0.5) + 0.2)
 
 gplots::plotCI(
   x = forestdata$logor, y = forestdata$order,
@@ -172,24 +174,24 @@ abline(v = log(1), lty = 2)
 
 axis(1,
   cex.axis = cextext, at = log(c(minmy, 1, maxmy)),
-  labels = c(minmy, 1, maxmy)
+  labels = c(minmy, 1, maxmy), gap.axis = 0.000001
 )
 
 axis(2,
   at = forestdata$order,
   labels = forestdata$Variable,
-  cex.axis = cextext, tick = FALSE, las = 2, line = 20, hadj = 0
+  cex.axis = cextext, tick = FALSE, las = 2, line = 19, hadj = 0
 )
 
 axis(2,
   at = nrow(forestdata),
   labels = "Adjusted OR (95% CI)",
-  cex.axis = cextext, tick = FALSE, las = 2, line = 3, hadj = 0.5, font = 2
+  cex.axis = cextext, tick = FALSE, las = 2, line = 2, hadj = 0.5, font = 2
 )
 axis(2,
   at = forestdata$order,
   labels = forestdata$orci,
-  cex.axis = cextext, tick = FALSE, las = 2, line = 3, hadj = 0.5
+  cex.axis = cextext, tick = FALSE, las = 2, line = 2, hadj = 0.5
 )
 
 axis(1,

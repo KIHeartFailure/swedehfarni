@@ -1,87 +1,99 @@
-```{r ortabss3, cache=cacheon}
+```{r ortabss13, cache=cacheon}
 
-levs <- levels(rsdata %>% pull(shf_durationhf))
+orfunc <- function(impdata, level) {
+  # mult
+  ormod <- with(impdata, glm(
+    formula(paste0(
+      "sos_lm_arni3 == '", level, "' ~ ",
+      paste(modvarspop1, collapse = " + ")
+    )),
+    family = binomial(link = "logit")
+  ))
 
-for (i in seq_along(modvarspop3)) {
-  modvarstmp <- modvarspop3[modvarspop3 != modvarspop3[i]]
-  nlevsivar <- ifelse(is.factor(rsdata %>% pull(!!sym(modvarspop3[i]))),
-    nlevels(rsdata %>% pull(!!sym(modvarspop3[i]))), 2
-  )
+  sormod <- summary(pool(ormod))
+  nval <- length(sormod$term)
 
-  for (j in seq_along(levs)) {
-    # crude
-    ormoduni <- with(imprsdatapop3, glm(
+  preds <- bind_cols(
+    Variable = as.character(sormod$term[2:nval]),
+    logoradj = sormod$estimate[2:nval],
+    lciadj = sormod$estimate[2:nval] - global_z05 * sormod$std.error[2:nval],
+    uciadj = sormod$estimate[2:nval] + global_z05 * sormod$std.error[2:nval],
+    padj = fn(sormod$p.value[2:nval], dig = 3, p = TRUE)
+  ) %>%
+    mutate(orciadj = paste0(
+      fn(exp(logoradj), 2),
+      " (", fn(exp(lciadj), 2), "-",
+      fn(exp(uciadj), 2), ")"
+    )) %>%
+    select(Variable, logoradj, lciadj, uciadj, orciadj, padj) %>%
+    mutate(
+      Variable = str_replace(Variable, fixed("Yes"), "")
+    )
+
+  # crude
+  for (i in seq_along(modvarspop1)) {
+    ormoduni <- with(impdata, glm(
       formula(paste0(
-        "sos_lm_arni14 == 'Yes' ~ ", modvarspop3[i],
-        " * relevel(shf_durationhf, ref = '", levs[j], "')"
+        "sos_lm_arni3 == '", level,
+        "' ~ ", modvarspop1[i]
       )),
       family = binomial(link = "logit")
     ))
 
     sormoduni <- summary(pool(ormoduni))
+    nval <- length(sormoduni$term)
 
-    # mult
-    ormodadj <- with(imprsdatapop3, glm(
-      formula(paste0(
-        "sos_lm_arni14 == 'Yes' ~ ",
-        modvarspop3[i],
-        " * relevel(shf_durationhf, ref = '", levs[j], "') + ",
-        paste(modvarstmp, collapse = " + ")
-      )),
-      family = binomial(link = "logit")
-    ))
-
-    sormodadj <- summary(pool(ormodadj))
-
-    predstmp <- bind_cols(
-      Variable = as.character(sormoduni$term[2:nlevsivar]),
-      logorcrude = sormoduni$estimate[2:nlevsivar],
-      lcicrude = sormoduni$estimate[2:nlevsivar] - global_z05 * sormoduni$std.error[2:nlevsivar],
-      ucicrude = sormoduni$estimate[2:nlevsivar] + global_z05 * sormoduni$std.error[2:nlevsivar],
-      pcrude = fn(sormoduni$p.value[2:nlevsivar], dig = 3, p = TRUE),
-      pintcrude = fn(last(sormoduni$p.value), dig = 3, p = TRUE),
-      logoradj = sormodadj$estimate[2:nlevsivar],
-      lciadj = sormodadj$estimate[2:nlevsivar] - global_z05 * sormodadj$std.error[2:nlevsivar],
-      uciadj = sormodadj$estimate[2:nlevsivar] + global_z05 * sormodadj$std.error[2:nlevsivar],
-      padj = fn(sormodadj$p.value[2:nlevsivar], dig = 3, p = TRUE),
-      pintadj = fn(last(sormodadj$p.value), dig = 3, p = TRUE)
+    predsunitmp <- bind_cols(
+      Variable = as.character(sormoduni$term[2:nval]),
+      logorcrude = sormoduni$estimate[2:nval],
+      lcicrude = sormoduni$estimate[2:nval] - global_z05 * sormoduni$std.error[2:nval],
+      ucicrude = sormoduni$estimate[2:nval] + global_z05 * sormoduni$std.error[2:nval],
+      pcrude = fn(sormoduni$p.value[2:nval], dig = 3, p = TRUE)
     ) %>%
+      mutate(orcicrude = paste0(
+        fn(exp(logorcrude), 2),
+        " (", fn(exp(lcicrude), 2), "-",
+        fn(exp(ucicrude), 2), ")"
+      )) %>%
+      select(Variable, logorcrude, lcicrude, ucicrude, orcicrude, pcrude) %>%
       mutate(
-        orcicrude = paste0(
-          fn(exp(logorcrude), 2),
-          " (", fn(exp(lcicrude), 2), "-",
-          fn(exp(ucicrude), 2), ")"
-        ),
-        orciadj = paste0(
-          fn(exp(logoradj), 2),
-          " (", fn(exp(lciadj), 2), "-",
-          fn(exp(uciadj), 2), ")"
-        )
+        Variable = str_replace(Variable, fixed("Yes"), "")
       )
 
-    if (j == 1) {
-      colnames(predstmp) <- paste0(colnames(predstmp), "_1")
-      predstmp2 <<- predstmp
-    }
-    if (j == 2) {
-      colnames(predstmp) <- paste0(colnames(predstmp), "_2")
-      predstmp2 <<- bind_cols(predstmp2, predstmp %>% select(-Variable_2))
+    if (i == 1) {
+      predsuni <<- predsunitmp
+    } else {
+      predsuni <<- bind_rows(predsuni, predsunitmp)
     }
   }
 
-  if (i == 1) {
-    preds <<- predstmp2
-  } else {
-    preds <<- bind_rows(preds, predstmp2)
-  }
+  predall <- full_join(predsuni,
+    preds,
+    by = "Variable"
+  )
 }
 
-preds <- preds %>%
-  rename(Variable = Variable_1) %>%
+
+imprsdatapop131 <- miceadds::subset_datlist(imprsdata,
+  expr_subset = rsdata$pop13 & rsdata$sos_lm_arni3 != "15-90 days"
+)
+imprsdatapop132 <- miceadds::subset_datlist(imprsdata,
+  expr_subset = rsdata$pop13 & rsdata$sos_lm_arni3 != "0-14 days"
+)
+
+pred1 <- orfunc(impdata = imprsdatapop131, level = "0-14 days")
+colnames(pred1) <- paste0(colnames(pred1), "_1")
+pred2 <- orfunc(imprsdatapop132, "15-90 days")
+colnames(pred2) <- paste0(colnames(pred2), "_2")
+
+predall <- cbind(pred1, pred2 %>% select(-Variable_2)) %>%
+  rename(Variable = Variable_1)
+
+predall <- predall %>%
   mutate(across(everything(), str_replace_all, fixed("Yes"), "")) %>%
   mutate(Variable = str_replace_all(Variable, "shf_sos_com_", "sos_com_"))
 
-preds <- left_join(preds,
+predall <- left_join(predall,
   meta_variables %>%
     select(variable, label),
   by = c("Variable" = "variable")
@@ -111,41 +123,35 @@ preds <- left_join(preds,
     Variable == "scb_dispincome_cat>=median" ~ "Income >=median vs <median",
     Variable == "shf_indexyear" ~ "Year of inclusion",
     Variable == "sos_lm_previousrasi" ~ "Previous ACEi/ARB",
+    Variable == "sos_timeprevhosphf_cat2<=365" ~ "Previous HFH (days) <=365 vs No", 
+    Variable == "sos_timeprevhosphf_cat2>365" ~ "Previous HFH (days) >365 vs No", 
     TRUE ~ Variable
   ))
 
+predallprint <- predall %>%
+  select(Variable, "orcicrude_1", "pcrude_1", "orcicrude_2", "pcrude_2", "orciadj_1", "padj_1", "orciadj_2", "padj_2")
 
-predsprint <- preds %>%
-  select(
-    Variable,
-    orcicrude_1, pcrude_1, orcicrude_2, pcrude_2, pintcrude_2,
-    orciadj_1, padj_1, orciadj_2, padj_2, pintadj_2
-  )
+colnames(predallprint) <- c("Variable", rep(c("OR (95% CI)", "p-value"), 4))
 
-colnames(predsprint) <- c(
-  "Variable",
-  rep(c(
-    rep(c("OR (95% CI)", "p-value"), 2),
-    "p-value interaction"
-  ), 2)
-)
-
-write.xlsx(predsprint, paste0(
-  "./output/tabs/Associations between ARNi use and characteristics_substudy3_", Sys.Date(), ".xlsx"
+write.xlsx(predallprint, paste0(
+  "./output/tabs/Associations between ARNi use and characteristics_substudy13_", Sys.Date(), ".xlsx"
 ), rowNames = FALSE, overwrite = TRUE)
 
-default_kable(predsprint,
+default_kable(predallprint,
   font_size = 6,
-  caption = "Associations between ARNi use and characteristics by HF duration - Substudy 3",
+  caption = "Associations between ARNi use and characteristics - Substudy 1, 3 groups",
   escape = T
 ) %>%
-  add_header_above(c(" " = 1, "HF <6 mo" = 2, "HF >=6 mo" = 2, " " = 1, "HF <6 mo" = 2, "HF >=6 mo" = 2, " " = 1)) %>%
-  add_header_above(c(" " = 1, "Crude" = 5, "Adjusted" = 5))
+  add_header_above(c(" " = 1, "0-14 days vs >90/No" = 2, "15-90 days vs >90/No" = 2, 
+                     "0-14 days vs >90/No" = 2, "15-90 days vs >90/No" = 2)) %>%
+  add_header_above(c(" " = 1, "Crude" = 4, "Adjusted" = 4))
 ```
 
-```{r orforestss3, cache=cacheon, dependson=c("ortabss3"), fig.width=5, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics by HF duration - Substudy 3"}
+\clearpage
 
-forestdata <- preds %>%
+```{r orforestss13, cache=cacheon, dependson=c("ortabss13"), fig.width=5, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics - Substudy 1, 3 groups"}
+
+forestdata <- predall %>%
   select(Variable, contains("adj")) %>%
   mutate(across(contains(c("logor", "lci", "uci")), as.numeric))
 
@@ -165,11 +171,11 @@ forestdata <- forestdata %>%
 minmy <- round(exp(min(c(forestdata$lciadj_1, forestdata$lciadj_2), na.rm = T)), 2)
 maxmy <- ceiling(exp(max(c(forestdata$uciadj_1, forestdata$uciadj_2), na.rm = T)))
 
-add1 <- 5
+add1 <- 6.5
 cextext <- 0.6
 
 # c(bottom, left, top, right)
-par(mar = c(3, 18.5, 0, 0) + 0.2)
+par(mar = c(3, 18, 0, 0) + 0.2)
 
 gplots::plotCI(
   x = forestdata$logoradj_1, y = forestdata$order,
@@ -225,34 +231,34 @@ axis(1,
 axis(2,
   at = forestdata$order,
   labels = forestdata$Variable,
-  cex.axis = cextext, tick = FALSE, las = 2, line = 17.5, hadj = 0
+  cex.axis = cextext, tick = FALSE, las = 2, line = 17, hadj = 0
 )
 
 axis(2,
   at = nrow(forestdata),
-  labels = "HF <6 mo",
-  cex.axis = cextext, tick = FALSE, las = 2, line = 6, hadj = 0.5, font = 2
+  labels = "0-14 vs >90/No",
+  cex.axis = cextext, tick = FALSE, las = 2, line = 5.5, hadj = 0.5, font = 2
 )
 axis(2,
   at = forestdata$order,
   labels = forestdata$orciadj_1,
-  cex.axis = cextext, tick = FALSE, las = 2, line = 6, hadj = 0.5
+  cex.axis = cextext, tick = FALSE, las = 2, line = 5.5, hadj = 0.5
 )
 axis(2,
   at = nrow(forestdata),
-  labels = "HF \u22656 mo",
-  cex.axis = cextext, tick = FALSE, las = 2, line = 1.5, hadj = 0.5, font = 2
+  labels = "15-90 vs >90/No",
+  cex.axis = cextext, tick = FALSE, las = 2, line = 1, hadj = 0.5, font = 2
 )
 axis(2,
   at = forestdata$order,
   labels = forestdata$orciadj_2,
-  cex.axis = cextext, tick = FALSE, las = 2, line = 1.5, hadj = 0.5
+  cex.axis = cextext, tick = FALSE, las = 2, line = 1, hadj = 0.5
 )
 
 axis(2,
   at = nrow(forestdata) + 1,
   labels = "Adjusted OR (95% CI)",
-  cex.axis = cextext, tick = FALSE, las = 2, line = (6 + 1.5) / 2, hadj = 0.5, font = 2
+  cex.axis = cextext, tick = FALSE, las = 2, line = (5.5 + 1) / 2, hadj = 0.5, font = 2
 )
 
 axis(1,

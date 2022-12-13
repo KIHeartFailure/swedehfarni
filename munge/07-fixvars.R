@@ -3,7 +3,7 @@
 # Additional variables from mainly SHF ------------------------------------
 
 targetdose <- data.frame(matrix(c(
-  "Captopril", 50 * 3, 
+  "Captopril", 50 * 3,
   "Enalapril", 10 * 2,
   "Fosinopril", "-",
   "Lisinopril", 20,
@@ -78,18 +78,26 @@ rsdata <- rsdata %>%
         ">=8"
       )
     ),
-    shf_sos_prevhfh = factor(
+    sos_timeprevhosphf_cat = factor(
       case_when(
-        shf_location == "In-patient" |
-          !is.na(sos_timeprevhosphf) & sos_timeprevhosphf < 365 ~ 1,
-        TRUE ~ 0
+        is.na(sos_timeprevhosphf) ~ 0,
+        sos_timeprevhosphf <= 30 ~ 1,
+        sos_timeprevhosphf <= 180 ~ 2,
+        sos_timeprevhosphf <= 365 ~ 3,
+        sos_timeprevhosphf > 365 ~ 4
       ),
-      levels = 0:1, labels = c(
-        "<1 year",
-        ">1 year/No"
-      )
+      levels = 0:4,
+      labels = c("No", "<=30", "31-180", "181-365", ">365")
     ),
-    sos_timeprevhosphf = if_else(shf_location == "In-patient", 0, sos_timeprevhosphf),
+    sos_timeprevhosphf_cat2 = factor(
+      case_when(
+        is.na(sos_timeprevhosphf) ~ 0,
+        sos_timeprevhosphf <= 365 ~ 1,
+        sos_timeprevhosphf > 365 ~ 2
+      ),
+      levels = 0:2,
+      labels = c("No", "<=365", ">365")
+    ),
     shf_qol_cat = factor(
       case_when(
         shf_qol <= 25 ~ 1,
@@ -120,13 +128,12 @@ rsdata <- rsdata %>%
     shf_rasidosetarget = pmax(shf_aceidosetarget, shf_arbdosetarget, na.rm = T),
     shf_rasidosetarget_cat = factor(
       case_when(
-        shf_rasidosetarget <= .25 ~ 1,
-        shf_rasidosetarget <= .50 ~ 2,
-        shf_rasidosetarget <= .75 ~ 3,
-        shf_rasidosetarget > .75 ~ 4
+        shf_rasidosetarget < .5 ~ 1,
+        shf_rasidosetarget <= .99 ~ 2,
+        shf_rasidosetarget > .99 ~ 3
       ),
-      levels = 1:4,
-      labels = c("<=25%", "26-50%", "51-75%", ">75%")
+      levels = 1:3,
+      labels = c("<50%", "50-99%", ">=100%")
     ),
     shf_bbldosetarget = case_when(
       shf_bblsub == "Atenolol" ~ NA_real_,
@@ -140,13 +147,12 @@ rsdata <- rsdata %>%
     ),
     shf_bbldosetarget_cat = factor(
       case_when(
-        shf_bbldosetarget <= .25 ~ 1,
-        shf_bbldosetarget <= .50 ~ 2,
-        shf_bbldosetarget <= .75 ~ 3,
-        shf_bbldosetarget > .75 ~ 4
+        shf_bbldosetarget < .5 ~ 1,
+        shf_bbldosetarget <= .99 ~ 2,
+        shf_bbldosetarget > .99 ~ 3
       ),
-      levels = 1:4,
-      labels = c("<=25%", "26-50%", "51-75%", ">75%")
+      levels = 1:3,
+      labels = c("<50%", "50-99%", ">=100%")
     ),
     shf_mradosetarget = case_when(
       shf_mrasub == "Eplerenon" ~ shf_mradose / 50,
@@ -154,13 +160,12 @@ rsdata <- rsdata %>%
     ),
     shf_mradosetarget_cat = factor(
       case_when(
-        shf_mradosetarget <= .25 ~ 1,
-        shf_mradosetarget <= .50 ~ 2,
-        shf_mradosetarget <= .75 ~ 3,
-        shf_mradosetarget > .75 ~ 4
+        shf_mradosetarget < .5 ~ 1,
+        shf_mradosetarget <= .99 ~ 2,
+        shf_mradosetarget > .99 ~ 3
       ),
-      levels = 1:4,
-      labels = c("<=25%", "26-50%", "51-75%", ">75%")
+      levels = 1:3,
+      labels = c("<50%", "50-99%", ">=100%")
     ),
     shf_sglt2dosetarget = case_when(
       shf_sglt2sub == "Dapagliflozin" ~ shf_sglt2dose / 10,
@@ -169,42 +174,29 @@ rsdata <- rsdata %>%
     ),
     shf_sglt2dosetarget_cat = factor(
       case_when(
-        shf_sglt2dosetarget <= .25 ~ 1,
-        shf_sglt2dosetarget <= .50 ~ 2,
-        shf_sglt2dosetarget <= .75 ~ 3,
-        shf_sglt2dosetarget > .75 ~ 4
+        shf_sglt2dosetarget < .5 ~ 1,
+        shf_sglt2dosetarget <= .99 ~ 2,
+        shf_sglt2dosetarget > .99 ~ 3
       ),
-      levels = 1:4,
-      labels = c("<=25%", "26-50%", "51-75%", ">75%")
+      levels = 1:3,
+      labels = c("<50%", "50-99%", ">=100%")
     ),
 
     # Outcomes
 
+    sos_outtime_death30 = sos_outtime_death - 30,
     sos_outtime_death = sos_outtime_death - 14,
+    
+    sos_out_deathcvhosphf = ifelse(sos_out_deathcv == "Yes" | sos_out_hosphf == "Yes", "Yes", "No"),
+    sos_out_deathcvhosphf30 = ifelse(sos_out_deathcv == "Yes" | sos_out_hosphf30 == "Yes", "Yes", "No"),
+    
     sos_out_countdeathcvhosphf = ifelse(sos_out_deathcv == "Yes",
       sos_out_counthosphf + 1,
       sos_out_counthosphf
     ),
-    # comp event outcomes
-    sos_out_deathcvhosphf_comp = case_when(
-      sos_out_deathcvhosphf == "Yes" ~ 1,
-      sos_out_death == "Yes" ~ 2,
-      TRUE ~ 0
-    ),
-    sos_out_deathcv_comp = case_when(
-      sos_out_deathcv == "Yes" ~ 1,
-      sos_out_death == "Yes" ~ 2,
-      TRUE ~ 0
-    ),
-    sos_out_hosphf_comp = case_when(
-      sos_out_hosphf == "Yes" ~ 1,
-      sos_out_death == "Yes" ~ 2,
-      TRUE ~ 0
-    ),
-    sos_out_hosprenal_comp = case_when(
-      sos_out_hosprenal == "Yes" ~ 1,
-      sos_out_death == "Yes" ~ 2,
-      TRUE ~ 0
+    sos_out_countdeathcvhosphf30 = ifelse(sos_out_deathcv == "Yes",
+                                        sos_out_counthosphf30 + 1,
+                                        sos_out_counthosphf30
     )
   ) %>%
   mutate(across(where(is.character), as.factor))

@@ -25,7 +25,7 @@ flow <- rbind(flow, c("EF < 40%", nrow(rsdata)))
 
 rsdata <- rsdata %>%
   filter(sos_outtime_death > 14)
-flow <- rbind(flow, c(">14 days follow-up (to avoid immortal time bias*)", nrow(rsdata)))
+flow <- rbind(flow, c(">14 days follow-up (to avoid immortal time bias)*", nrow(rsdata)))
 
 rsdata <- rsdata %>%
   filter(sos_lm_previousarni == "No")
@@ -37,11 +37,18 @@ rsdata <- rsdata %>%
   slice(1) %>%
   ungroup()
 
-flow <- rbind(flow, c("First post / patient (substudy 2)", nrow(rsdata)))
+flow <- rbind(flow, c("First post / patient", nrow(rsdata)))
 
-flow <- rbind(flow, c(" - Hospitalized (substudy 1)", nrow(rsdata %>%
+flow <- rbind(flow, c("Hospitalized (substudy 1, 2 groups)", nrow(rsdata %>%
   filter(shf_location %in% c("In-patient")))))
 
-flow <- rbind(flow, c(" - Non-missing HF duration (substudy 3)", nrow(rsdata %>% filter(!is.na(shf_durationhf)))))
+rsdata <- rsdata %>%
+  mutate(pop13 = sos_outtime_death > 30 & shf_location %in% c("In-patient"))
+flow <- rbind(flow, c("Hospitalized and >30 days follow-up (substudy 1, 3 groups)*", nrow(rsdata %>%
+                                                                       filter(pop13))))
+
+flow <- rbind(flow, c("ARNi users (substudy 2)", nrow(rsdata %>% filter(sos_lm_arni14 == "Yes"))))
+
+flow <- rbind(flow, c("Non-missing HF duration (substudy 3)", nrow(rsdata %>% filter(!is.na(shf_durationhf)))))
 
 colnames(flow) <- c("Criteria", "N")

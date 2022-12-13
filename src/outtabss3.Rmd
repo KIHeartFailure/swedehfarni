@@ -4,7 +4,7 @@ survfunc <- function(time, event, eventname,
   out <- data.frame(matrix(NA, ncol = 7, nrow = 3))
 
   out[1, 1] <- eventname
-  colnames(out) <- c("Outcome", "Model", rep(c("ARNi No", "ARNi Yes"), 2), "P interaction")
+  colnames(out) <- c("Outcome", "Model", rep(c("ARNi No", "ARNi Yes"), 2), "p-value interaction")
 
   levs <- levels(rsdata %>% pull(shf_durationhf))
 
@@ -171,7 +171,7 @@ write.xlsx(outall, paste0("./output/tabs/Outcomes_ss3_", Sys.Date(), ".xlsx"), r
 
 footnote(
   default_kable(outall,
-    font_size = 6,
+    font_size = 7,
     caption = "Outcomes by HF duration - Substudy 3",
     longtable = TRUE
   ) %>%

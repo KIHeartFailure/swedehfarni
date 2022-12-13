@@ -33,7 +33,7 @@ kmfunc <- function(time, event, eventmod = NULL, eventname, ymax = 1, rep = FALS
   if (rep) {
     amod <- with(imprsdatapop3, glm.nb(formula(paste0(
       eventmod, " ~ sos_lm_arni14 * relevel(shf_durationhf, ref = '<6mo') + offset(log(sos_outtime_death)) +",
-      paste(modvarspop1, collapse = " + ")
+      paste(modvarspop3, collapse = " + ")
     ))))
 
     asmod <- summary(pool(amod))
@@ -46,7 +46,7 @@ kmfunc <- function(time, event, eventmod = NULL, eventname, ymax = 1, rep = FALS
 
     amod <- with(imprsdatapop3, glm.nb(formula(paste0(
       eventmod, " ~ sos_lm_arni14 * relevel(shf_durationhf, ref = '>6mo') + offset(log(sos_outtime_death)) +",
-      paste(modvarspop1, collapse = " + ")
+      paste(modvarspop3, collapse = " + ")
     ))))
 
     asmod <- summary(pool(amod))
@@ -72,7 +72,7 @@ kmfunc <- function(time, event, eventmod = NULL, eventname, ymax = 1, rep = FALS
       ylab = paste0(eventname, " (%)"),
       yscale = 100,
       xscale = 365,
-      col = rep(global_cols[c(2, 5)], 2),
+      col = rep(global_cols[c(1, 4)], each = 2),
       mark.time = FALSE,
       bty = "n",
       xlim = c(0, 365 * 4),
@@ -80,8 +80,8 @@ kmfunc <- function(time, event, eventmod = NULL, eventname, ymax = 1, rep = FALS
       xlab = "Follow-up (years)",
       cex.lab = cexmy,
       axes = F,
-      lwd = 2,
-      lty = c(1, 1, 3, 3),
+      lwd = 2.5,
+      lty = c(3, 1, 3, 1),
       xaxs = "i", yaxs = "i"
     )
     axis(2, seq(0, ymax + 0.05, 0.05), c(seq(0, ymax * 100, 5), 100), las = 2, cex.axis = cexmy)
@@ -94,36 +94,36 @@ kmfunc <- function(time, event, eventmod = NULL, eventname, ymax = 1, rep = FALS
       fitsr@MCF$MCF[fitsr@MCF$sos_lm_arni14 == "No" & fitsr@MCF$shf_durationhf == "<6mo"],
       type = "l",
       ylab = paste0("Mean cumulative ", eventname, " (per 100 patients)"),
-      col = global_cols[2],
+      col = global_cols[1],
       xlim = c(0, 365 * 4),
       ylim = c(0, ymax + 0.05),
       xlab = "Follow-up (years)",
       cex.lab = cexmy,
       axes = F,
-      lwd = 2,
-      lty = 1,
+      lwd = 2.5,
+      lty = 3,
       xaxs = "i", yaxs = "i"
     )
     lines(
       fitsr@MCF$time[fitsr@MCF$sos_lm_arni14 == "Yes" & fitsr@MCF$shf_durationhf == "<6mo"],
       fitsr@MCF$MCF[fitsr@MCF$sos_lm_arni14 == "Yes" & fitsr@MCF$shf_durationhf == "<6mo"],
-      col = global_cols[5],
-      lwd = 2,
+      col = global_cols[1],
+      lwd = 2.5,
       lty = 1
     )
     lines(
       fitsr@MCF$time[fitsr@MCF$sos_lm_arni14 == "No" & fitsr@MCF$shf_durationhf == ">6mo"],
       fitsr@MCF$MCF[fitsr@MCF$sos_lm_arni14 == "No" & fitsr@MCF$shf_durationhf == ">6mo"],
-      col = global_cols[2],
-      lwd = 2,
+      col = global_cols[4],
+      lwd = 2.5,
       lty = 3
     )
     lines(
       fitsr@MCF$time[fitsr@MCF$sos_lm_arni14 == "Yes" & fitsr@MCF$shf_durationhf == ">6mo"],
       fitsr@MCF$MCF[fitsr@MCF$sos_lm_arni14 == "Yes" & fitsr@MCF$shf_durationhf == ">6mo"],
-      col = global_cols[5],
-      lwd = 2,
-      lty = 3
+      col = global_cols[4],
+      lwd = 2.5,
+      lty = 1
     )
     axis(2, seq(0, ymax, 0.5), seq(0, ymax * 100, 50), las = 2, cex.axis = cexmy)
   }
@@ -134,19 +134,21 @@ kmfunc <- function(time, event, eventmod = NULL, eventname, ymax = 1, rep = FALS
 
   legend(
     x = 0.5, y = ymax + 0.05, bty = "n", c("", levs),
-    col = c("white", global_cols[c(2, 5, 2, 5)]), cex = cexmy, lwd = 2, lty = c(1, 1, 1, 3, 3),
-    text.col = c("white", global_cols[c(2, 5, 2, 5)])
+    col = c("white", global_cols[c(1, 1, 4, 4)]), cex = cexmy, lwd = 2.5, lty = c(1, 3, 1, 3, 1),
+    text.col = c("white", global_cols[c(1, 1, 4, 4)])
   )
+  if (rep) {rname <- "RR"}
+  if (!rep) {rname <- "HR"}
   legend(
-    x = 2.35 * 365, y = ymax + 0.05, c("Adjusted HR (95% CI), p-value", "ref", hrprinthf1, "ref", hrprinthf2),
+    x = 2.45 * 365, y = ymax + 0.05, c(paste0("Adjusted ", rname, " (95% CI), p-value"), "ref", hrprinthf1, "ref", hrprinthf2),
     cex = cexmy, adj = 0.5, bty = "n"
   )
 
   mtext("No. at risk", side = 1, line = 3.7, at = -550, adj = 0, cex = cexmy, font = 2)
-  mtext(levs[1], side = 1, line = 4.7, at = -550, adj = 0, cex = cexmy, col = global_cols[2])
-  mtext(levs[2], side = 1, line = 5.7, at = -550, adj = 0, cex = cexmy, col = global_cols[5])
-  mtext(levs[3], side = 1, line = 6.7, at = -550, adj = 0, cex = cexmy, col = global_cols[2])
-  mtext(levs[4], side = 1, line = 7.7, at = -550, adj = 0, cex = cexmy, col = global_cols[5])
+  mtext(levs[1], side = 1, line = 4.7, at = -550, adj = 0, cex = cexmy, col = global_cols[1])
+  mtext(levs[2], side = 1, line = 5.7, at = -550, adj = 0, cex = cexmy, col = global_cols[1])
+  mtext(levs[3], side = 1, line = 6.7, at = -550, adj = 0, cex = cexmy, col = global_cols[4])
+  mtext(levs[4], side = 1, line = 7.7, at = -550, adj = 0, cex = cexmy, col = global_cols[4])
 
   nrisk <- summary(fits, seq(0, 4) * 365, extend = T)
 
@@ -169,34 +171,29 @@ kmfunc <- function(time, event, eventmod = NULL, eventname, ymax = 1, rep = FALS
 }
 ```
 
-```{r kmcvdeathhfhss3, fig.cap="CVD/First HF hospitalization by HF duration - Substudy 3", cache=cacheon, dependson="kmfuncss3", fig.width=8, fig.height=7}
+```{r kmss3, cache = cacheon, dependson="kmfuncss3", fig.cap = "KM/MCF - Substudy 1", fig.show='hold', out.width="50%", fig.subcap=c('CVD/First HFH', 'CVD', 'First HFH', 'CVD/Total HFH', 'Total HFH', 'All-cause mortality'), fig.ncol=2}
+
 kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_deathcvhosphf",
   eventname = "CVD/First HFH",
   ymax = 0.6
 )
-```
 
-```{r kmacvdeathss3, fig.cap="CVD by HF duration - Substudy 3", cache=cacheon, dependson="kmfuncss3", fig.width=8, fig.height=7}
 kmfunc(
   time = "sos_outtime_death",
   event = "sos_out_deathcv",
   eventname = "CVD",
   ymax = 0.6
 )
-```
 
-```{r kmhfhss3, fig.cap="First HF hospitalization by HF duration - Substudy 3", cache=cacheon, dependson="kmfuncss3", fig.width=8, fig.height=7}
 kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_hosphf",
   eventname = "First HFH",
   ymax = 0.6
 )
-```
 
-```{r kmtotcvdhfhss3, fig.cap="CVD/Total HF hospitalization - Substudy 3", cache=cacheon, dependson="kmfuncss3", fig.width=8, fig.height=7}
 kmfunc(
   event = "sos_out_deathcvhosphf",
   eventmod = "sos_out_countdeathcvhosphf",
@@ -205,9 +202,7 @@ kmfunc(
   ymax = 2.5,
   rep = T
 )
-```
 
-```{r kmtothfhss3, fig.cap="Total HF hospitalization by HF duration - Substudy 3", cache=cacheon, dependson="kmfuncss3", fig.width=8, fig.height=7}
 kmfunc(
   event = "sos_out_hosphf",
   eventmod = "sos_out_counthosphf",
@@ -216,9 +211,7 @@ kmfunc(
   ymax = 2,
   rep = T
 )
-```
 
-```{r kmdeathss3, fig.cap="All-cause mortality by HF duration - Substudy 3", cache=cacheon, dependson="kmfuncss3", fig.width=8, fig.height=7}
 kmfunc(
   time = "sos_outtime_death",
   event = "sos_out_death",

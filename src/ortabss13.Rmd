@@ -149,7 +149,7 @@ default_kable(predallprint,
 
 \clearpage
 
-```{r orforestss13, cache=cacheon, dependson=c("ortabss13"), fig.width=5, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics - Substudy 1, 3 groups"}
+```{r orforestss13, cache=cacheon, dependson=c("ortabss13"), fig.width=6, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics - Substudy 1, 3 groups"}
 
 forestdata <- predall %>%
   select(Variable, contains("adj")) %>%
@@ -171,7 +171,7 @@ forestdata <- forestdata %>%
 minmy <- round(exp(min(c(forestdata$lciadj_1, forestdata$lciadj_2), na.rm = T)), 2)
 maxmy <- ceiling(exp(max(c(forestdata$uciadj_1, forestdata$uciadj_2), na.rm = T)))
 
-add1 <- 6.5
+add1 <- 5.75
 cextext <- 0.6
 
 # c(bottom, left, top, right)
@@ -182,7 +182,7 @@ gplots::plotCI(
   li = forestdata$lciadj_1,
   ui = forestdata$uciadj_1,
   err = "x",
-  cex = 0.4,
+  cex = 0.6,
   xlim = c(
     log(minmy),
     log(maxmy) + add1
@@ -195,7 +195,7 @@ gplots::plotCI(
   pch = 22,
   pt.bg = forestdata$cols_1,
   col = forestdata$cols_1,
-  lwd = .4,
+  lwd = .6,
   gap = 0,
   sfrac = 0.001
 )
@@ -207,11 +207,11 @@ gplots::plotCI(
   li = forestdata$lciadj_2 + add1,
   ui = forestdata$uciadj_2 + add1,
   err = "x",
-  cex = 0.4,
+  cex = 0.6,
   pch = 22,
   pt.bg = forestdata$cols_2,
   col = forestdata$cols_2,
-  lwd = .4,
+  lwd = .6,
   gap = 0,
   sfrac = 0.001
 )

@@ -143,7 +143,7 @@ default_kable(predsprint,
   add_header_above(c(" " = 1, "Crude" = 5, "Adjusted" = 5))
 ```
 
-```{r orforestss3, cache=cacheon, dependson=c("ortabss3"), fig.width=5, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics by HF duration - Substudy 3"}
+```{r orforestss3, cache=cacheon, dependson=c("ortabss3"), fig.width=6, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics by HF duration - Substudy 3"}
 
 forestdata <- preds %>%
   select(Variable, contains("adj")) %>%
@@ -165,7 +165,7 @@ forestdata <- forestdata %>%
 minmy <- round(exp(min(c(forestdata$lciadj_1, forestdata$lciadj_2), na.rm = T)), 2)
 maxmy <- ceiling(exp(max(c(forestdata$uciadj_1, forestdata$uciadj_2), na.rm = T)))
 
-add1 <- 5
+add1 <- 4.5
 cextext <- 0.6
 
 # c(bottom, left, top, right)
@@ -176,7 +176,7 @@ gplots::plotCI(
   li = forestdata$lciadj_1,
   ui = forestdata$uciadj_1,
   err = "x",
-  cex = 0.4,
+  cex = 0.6,
   xlim = c(
     log(minmy),
     log(maxmy) + add1
@@ -189,7 +189,7 @@ gplots::plotCI(
   pch = 22,
   pt.bg = forestdata$cols_1,
   col = forestdata$cols_1,
-  lwd = .4,
+  lwd = .6,
   gap = 0,
   sfrac = 0.001
 )
@@ -201,11 +201,11 @@ gplots::plotCI(
   li = forestdata$lciadj_2 + add1,
   ui = forestdata$uciadj_2 + add1,
   err = "x",
-  cex = 0.4,
+  cex = 0.6,
   pch = 22,
   pt.bg = forestdata$cols_2,
   col = forestdata$cols_2,
-  lwd = .4,
+  lwd = .6,
   gap = 0,
   sfrac = 0.001
 )

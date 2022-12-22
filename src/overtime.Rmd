@@ -1,4 +1,4 @@
-```{r overtime, cache = cacheon, fig.cap = "ARNi overtime - Substudy 2", fig.show='hold', out.width="50%", fig.subcap=c('Alternative I', 'Alternative II'), fig.ncol=2}
+```{r overtime, cache = cacheon, fig.cap = "ARNi overtime - Substudy 2, SwedeHF population", fig.show='hold', out.width="50%", fig.subcap=c('Alternative I', 'Alternative II'), fig.ncol=2}
 
 cexmy <- 1.5
 # c(bottom, left, top, right) default c(5, 4, 4, 2) + 0.1.

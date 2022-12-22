@@ -2,8 +2,6 @@
 
 # Inclusion/exclusion criteria --------------------------------------------------------
 
-rsdata <- rsdata %>%
-  filter(casecontrol == "Case SwedeHF")
 flow <- c("Posts in SHFDB4", nrow(rsdata))
 
 rsdata <- rsdata %>%

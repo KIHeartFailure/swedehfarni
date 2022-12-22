@@ -1,0 +1,22 @@
+```{r flowchartnpr, cache=cacheon, fig.cap="Flow chart, NPR population"}
+
+grViz(paste0("digraph flowchart {
+      # node definitions with substituted label text
+      node [fontname = Helvetica, shape = rectangle]
+      tab1 [label = '@@1']
+      tab2 [label = '@@2']
+      tab3 [label = '@@3']
+      tab4 [label = '@@4']
+      tab5 [label = '@@5']
+
+      # edge definitions with the node IDs
+      tab1 -> tab2 -> tab3 -> tab4 -> tab5;
+      }
+
+      [1]: '", flownpr[1, 1], "\\n n = ", flownpr[1, 2], "'
+      [2]: '", flownpr[2, 1], "\\n n = ", flownpr[2, 2], "'
+      [3]: '", flownpr[3, 1], "\\n n = ", flownpr[3, 2], "'
+      [4]: '", flownpr[4, 1], "\\n n = ", flownpr[4, 2], "'
+      [5]: '", flownpr[5, 1], "\\n n = ", flownpr[5, 2], "'
+      "))
+```

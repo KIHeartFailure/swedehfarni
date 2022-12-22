@@ -1,4 +1,4 @@
-```{r flowchart, cache=cacheon, fig.cap="Flow chart"}
+```{r flowchart, cache=cacheon, fig.cap="Flow chart, SwedeHF population"}
 
 grViz(paste0("digraph flowchart {
       # node definitions with substituted label text

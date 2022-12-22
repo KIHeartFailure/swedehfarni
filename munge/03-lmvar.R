@@ -1,9 +1,18 @@
 
+rsdata <- rsdatafull410 %>%
+  filter(casecontrol == "Case SwedeHF")
+
+nprdata <- rsdatafull410 %>%
+  filter(casecontrol == "Case NPR")
+
+rm(rsdatafull410)
+
+# SwedeHF -----------------------------------------------------------------
 
 lmtmp <- left_join(
-  rsdata401 %>%
+  rsdata %>%
     select(lopnr, shf_indexdtm),
-  lmsel,
+  lmarni,
   by = "lopnr"
 )
 
@@ -14,7 +23,7 @@ lmtmp2 <- lmtmp %>%
 
 rsdata <- create_medvar(
   atc = global_atcarni,
-  medname = "previousarni", cohortdata = rsdata401, meddata = lmtmp2, id = c("lopnr", "shf_indexdtm"),
+  medname = "previousarni", cohortdata = rsdata, meddata = lmtmp2, id = c("lopnr", "shf_indexdtm"),
   metatime = "--1days",
   valsclass = "fac"
 )
@@ -70,4 +79,69 @@ rsdata <- create_medvar(
   valsclass = "fac"
 )
 
+
+# NPR ---------------------------------------------------------------------
+
+lmtmp <- left_join(
+  nprdata %>%
+    select(lopnr, shf_indexdtm),
+  lmarni,
+  by = "lopnr"
+)
+
+lmtmp2 <- lmtmp %>%
+  mutate(diff = as.numeric(EDATUM - shf_indexdtm)) %>%
+  filter(diff < 0) %>%
+  select(lopnr, shf_indexdtm, EDATUM, ATC)
+
+nprdata <- create_medvar(
+  atc = global_atcarni,
+  medname = "previousarni", cohortdata = nprdata, meddata = lmtmp2, id = c("lopnr"),
+  metatime = "--1days",
+  valsclass = "fac"
+)
+
+lmtmp2 <- lmtmp %>%
+  mutate(diff = as.numeric(EDATUM - shf_indexdtm)) %>%
+  filter(diff >= 0, diff <= 14) %>%
+  select(lopnr, shf_indexdtm, EDATUM, ATC)
+
+nprdata <- create_medvar(
+  atc = global_atcarni,
+  medname = "arni14", cohortdata = nprdata, meddata = lmtmp2, id = c("lopnr"),
+  metatime = "0-14days",
+  valsclass = "fac"
+)
+
+lmtmp2 <- lmtmp %>%
+  mutate(diff = as.numeric(EDATUM - shf_indexdtm)) %>%
+  filter(diff >= -30.5 * 5, diff <= 14) %>%
+  select(lopnr, shf_indexdtm, EDATUM, ATC)
+
+nprdata <- create_medvar(
+  atc = "^(C09A|C09B|C09C|C09D(?!X04))",
+  medname = "rasi", cohortdata = nprdata, meddata = lmtmp2, id = c("lopnr"),
+  metatime = "-5mo-14days",
+  valsclass = "fac"
+)
+nprdata <- create_medvar(
+  atc = "^C03DA",
+  medname = "mra", cohortdata = nprdata, meddata = lmtmp2, id = c("lopnr"),
+  metatime = "-5mo-14days",
+  valsclass = "fac"
+)
+nprdata <- create_medvar(
+  atc = "^C07",
+  medname = "bbl", cohortdata = nprdata, meddata = lmtmp2, id = c("lopnr"),
+  metatime = "-5mo-14days",
+  valsclass = "fac"
+)
+nprdata <- create_medvar(
+  atc = "^(A10BK01|A10BD15|A10BD21|A10BD25|A10BK03|A10BD19|A10BD20)",
+  medname = "sglt2", cohortdata = nprdata, meddata = lmtmp2, id = c("lopnr"),
+  metatime = "-5mo-14days",
+  valsclass = "fac"
+)
+
 metalm[, "Register"] <- "Prescribed Drug Register"
+metalm <- metalm[c(1, 2, 3, 6, 7, 8, 9), ]

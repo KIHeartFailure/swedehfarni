@@ -11,12 +11,14 @@ ProjectTemplate::reload.project(
 )
 
 ProjectTemplate::cache("flow")
+ProjectTemplate::cache("flownpr")
 
 ProjectTemplate::cache("metalm")
 ProjectTemplate::cache("matchingn")
 ProjectTemplate::cache("targetdose")
 
 ProjectTemplate::cache("rsdata")
+ProjectTemplate::cache("nprdata")
 ProjectTemplate::cache("imprsdata")
 ProjectTemplate::cache("imprsdatapop1")
 ProjectTemplate::cache("imprsdatapop13")
@@ -33,5 +35,6 @@ ProjectTemplate::cache("tabvarspop3")
 ProjectTemplate::cache("modvars")
 ProjectTemplate::cache("modvarspop1")
 ProjectTemplate::cache("modvarspop3")
+ProjectTemplate::cache("tabvarsnpr")
 
 ProjectTemplate::cache("meta_variables")

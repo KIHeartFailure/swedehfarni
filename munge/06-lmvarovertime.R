@@ -4,7 +4,7 @@
 lmtmp <- left_join(
   rsdata %>%
     select(lopnr, shf_indexdtm),
-  lmsel,
+  lmarni,
   by = "lopnr"
 ) %>%
   mutate(atcneed = str_detect(ATC, global_atcarni)) %>%
@@ -52,3 +52,5 @@ overtime <- rbind(overtime, overtimefunc(2021, rsdata %>% filter(shf_location ==
 overtime <- overtime %>%
   as.data.frame() %>%
   mutate(percent = as.numeric(num) / as.numeric(den) * 100)
+
+rm(lmarni)

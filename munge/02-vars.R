@@ -116,3 +116,43 @@ modvars <- tabvars[!(tabvars %in% tabvars_not_in_mod)]
 
 modvarspop1 <- modvars[!modvars %in% c("shf_location")]
 modvarspop3 <- modvars[!modvars %in% c("shf_durationhf", "sos_timeprevhosphf_cat2")]
+
+tabvarsnpr <- c(
+  # demo
+  "shf_indexyear",
+  "shf_sex",
+  "shf_age",
+  "shf_age_cat",
+  
+  # organizational
+  "sos_durationhf",
+  
+  # treatments
+  "sos_lm_rasi",
+  "sos_lm_mra",
+  "sos_lm_bbl",
+  "sos_lm_sglt2",
+  
+  # comorbs
+  "sos_com_diabetes",
+  "sos_com_hypertension",
+  "sos_com_ihd",
+  "sos_com_pad",
+  "sos_com_stroke",
+  "sos_com_af",
+  "sos_com_valvular",
+  "sos_com_liver",
+  "sos_com_cancer3y",
+  "sos_com_copd",
+  "sos_com_renal",
+  "sos_com_charlsonci",
+  "sos_com_charlsonci_cat",
+  
+  # socec
+  "scb_famtype",
+  "scb_child",
+  "scb_education",
+  "scb_dispincome_cat",
+  "shf_qol",
+  "shf_qol_cat"
+)

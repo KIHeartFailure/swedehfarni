@@ -101,8 +101,8 @@ preds <- left_join(preds,
     Variable == "shf_map_cat>90" ~ "MAP >90 vs <=90",
     Variable == "shf_heartrate_cat>70" ~ "Heart rate (beats/min) >70 vs <=70",
     Variable == "shf_gfrckdepi_cat<60" ~ "eGFR (mL/min/1.73 m²) <60 vs >=60",
-    Variable == "shf_potassium_cathyperkalemia" ~ "Hyperkalemia vs normakalemia",
-    Variable == "shf_potassium_cathypokalemia" ~ "Hypokalemia vs normakalemia",
+    Variable == "shf_potassium_catHyperkalemia" ~ "Hyperkalemia vs normakalemia",
+    Variable == "shf_potassium_catHypokalemia" ~ "Hypokalemia vs normakalemia",
     Variable == "shf_ntprobnp_cat>=median" ~ "NT-proBNP (pg/ml) >=median vs <median",
     Variable == "shf_device_catCRT/ICD" ~ "CRT/ICD",
     Variable == "scb_famtypeLiving alone" ~ "Living alone vs cohabitating",
@@ -143,7 +143,7 @@ default_kable(predsprint,
   add_header_above(c(" " = 1, "Crude" = 5, "Adjusted" = 5))
 ```
 
-```{r orforestss3, cache=cacheon, dependson=c("ortabss3"), fig.width=6, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics by HF duration - Substudy 3"}
+```{r orforestss3, cache=cacheon, dependson=c("ortabss3"), fig.width=7, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics by HF duration - Substudy 3"}
 
 forestdata <- preds %>%
   select(Variable, contains("adj")) %>%
@@ -165,7 +165,7 @@ forestdata <- forestdata %>%
 minmy <- round(exp(min(c(forestdata$lciadj_1, forestdata$lciadj_2), na.rm = T)), 2)
 maxmy <- ceiling(exp(max(c(forestdata$uciadj_1, forestdata$uciadj_2), na.rm = T)))
 
-add1 <- 4.5
+add1 <- 4.25
 cextext <- 0.6
 
 # c(bottom, left, top, right)
@@ -191,7 +191,7 @@ gplots::plotCI(
   col = forestdata$cols_1,
   lwd = .6,
   gap = 0,
-  sfrac = 0.001
+  sfrac = 0.002
 )
 
 gplots::plotCI(
@@ -207,7 +207,7 @@ gplots::plotCI(
   col = forestdata$cols_2,
   lwd = .6,
   gap = 0,
-  sfrac = 0.001
+  sfrac = 0.002
 )
 
 abline(v = log(1), lty = 3, col = "grey")

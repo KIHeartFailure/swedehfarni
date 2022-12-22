@@ -57,28 +57,21 @@ cacheon <- TRUE
 
 ## Data source
 
-SHFDB4, https://kiheartfailure.github.io/shfdb4/, v 4.0.1. 
+SHFDB4, https://kiheartfailure.github.io/shfdb4/, v 4.1.0. 
 
 ## Inclusion/exclusion criteria
 
 ```{r, child = "./src/flowchart.Rmd"}
 ```
 
+```{r, child = "./src/flowchart_npr.Rmd"}
+```
+
 *If a patient dies immediately after the index visit he/she will not collect a drug prescribed at the index visit
 and thereby be defined as a ARNi initiation user. Throughout, the index date is 
 moved 14 days forward or 30 days (the latter for substudy 1, 3 groups).
 
-First patient in: `r min(rsdata$shf_indexdtm)` and last patient in: `r max(rsdata$shf_indexdtm)`.  
-
-The median age (IQR) is `r rsdata %>% summarise(med = fn(median(shf_age), dig = 1),
-                                             q1 = fn(quantile(shf_age, probs = 0.25), dig = 1),
-                                             q3 = fn(quantile(shf_age, probs = 0.75), dig = 1)) %>%
-                                   mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
-                                   pull(out)` and 
-`r rsdata %>% count(shf_sex) %>%
-  mutate(perc = fn(n / sum(n) * 100, 1)) %>%
-  filter(shf_sex == "Female") %>%
-  pull(perc)`% females.    
+\clearpage
 
 # Statistical analysis 
 
@@ -88,21 +81,19 @@ All analyses were performed using `r sessionInfo()$R.version$version.string` [@r
 The level of significance is set to 5%, two-sided. No adjustment for multiple 
 comparisons were made and therefore the results should be viewed with some care.
 
-\clearpage
-
 ## Created variables
 
 ```{r atc}
-default_kable(metalm, caption = "Treatments from Prescribed Drug Register", scale_down = F)
+default_kable(metalm, caption = "Treatments from Prescribed Drug Register")
 ```
+
+ARNi use is defined as early initiation (within 14 days) if not otherwise specified. 
 
 ```{r td}
 footnote(default_kable(targetdose, caption = "Daily target doses", scale_down = F),
   general = "Substances with - are set to missing for target doses."
 )
 ```
-
-ARNi use is defined as early initiation (within 14 days) if not otherwise specified. 
 
 ## Missing data
 
@@ -111,14 +102,20 @@ Variables included in the model are indicated in
 Table \ref{tab:tab1ss12}. Cvd/1hfh was included as the Nelson-Aalen estimator. 
 The same imputated dataset is used for all substudies. 
 
-\clearpage
-
 # Results
 
 For substudy 1 all analyses are performed partly for 2 groups 
 (early initiation of ARNI within 14 days, no initiation/initiation>14 days) and partly
 for 3 groups (early initiation of ARNI within 14 days, initiation within 15-90 days, 
 no initiation/initiation>90 days).
+
+For substudy 2 analyses are performed partly for the SwedeHF population and 
+partly for the HF population extracted from the National Patient Register (NPR). The 
+latter is defined as patients with an ICD-10 code for HF in main position in the 
+NPR (ICD-10: I110, I130, I132, I255, I420, I423, 1425-9, I43, I50, J81, K761) 
+starting from 2000-01-01 with no previous ICD-9/10 
+code for HF (I110 I130 I132 I255 I420 I423 1425 I426 I427 I428 I429 I43 I50 J81 K761 
+ICD-9: 414W 425E 425F 425G 425H 425W 425X 428) since 1987.
 
 ## Substudy 1 - 2 groups
 
@@ -145,6 +142,18 @@ retained and balance between groups. Other matching ratios: `r matchingn`.
 
 ### Baseline characteristics
 
+First patient in: `r min(rsdata %>% filter(shf_location == "In-patient") %>% pull(shf_indexdtm))` 
+and last patient in: `r max(rsdata%>% filter(shf_location == "In-patient") %>% pull(shf_indexdtm))`. 
+The median age (IQR) is `r rsdata%>% filter(shf_location == "In-patient") %>% summarise(med = fn(median(shf_age), dig = 1),
+                                             q1 = fn(quantile(shf_age, probs = 0.25), dig = 1),
+                                             q3 = fn(quantile(shf_age, probs = 0.75), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
+                                   pull(out)` and 
+`r rsdata %>% filter(shf_location == "In-patient") %>% count(shf_sex) %>%
+  mutate(perc = fn(n / sum(n) * 100, 1)) %>%
+  filter(shf_sex == "Female") %>%
+  pull(perc)`% females.    
+  
 ```{r, child = "./src/tab1ss12.Rmd"}
 ```
 
@@ -234,6 +243,18 @@ vs. those who initiate ARNi after 14 days vs. those who do not initiate;
 
 ### Baseline characteristics
 
+First patient in: `r min(rsdata %>% filter(pop13) %>% pull(shf_indexdtm))` 
+and last patient in: `r max(rsdata%>% filter(pop13) %>% pull(shf_indexdtm))`. 
+The median age (IQR) is `r rsdata%>% filter(pop13) %>% summarise(med = fn(median(shf_age), dig = 1),
+                                             q1 = fn(quantile(shf_age, probs = 0.25), dig = 1),
+                                             q3 = fn(quantile(shf_age, probs = 0.75), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
+                                   pull(out)` and 
+`r rsdata %>% filter(pop13) %>% count(shf_sex) %>%
+  mutate(perc = fn(n / sum(n) * 100, 1)) %>%
+  filter(shf_sex == "Female") %>%
+  pull(perc)`% females. 
+
 ```{r, child = "./src/tab1ss13.Rmd"}
 ```
 
@@ -294,7 +315,7 @@ summarise(med = fn(median(sos_outtime_death30 / 365.25 * 12), dig = 1),
 
 \clearpage
 
-## Substudy 2
+## Substudy 2 - SwedeHF population
 
 ### Aims
 
@@ -304,8 +325,19 @@ during hospitalization vs outpatient care;
 2.	Evaluation of the current status of implementation of use of sacubitril/valsartan in clinical
 practice (both inpatients/outpatients) 
 
-
 ### Baseline characteristics
+
+First patient in: `r min(rsdata %>% filter(sos_lm_arni14 == "Yes") %>% pull(shf_indexdtm))` 
+and last patient in: `r max(rsdata%>% filter(sos_lm_arni14 == "Yes") %>% pull(shf_indexdtm))`. 
+The median age (IQR) is `r rsdata%>% filter(sos_lm_arni14 == "Yes") %>% summarise(med = fn(median(shf_age), dig = 1),
+                                             q1 = fn(quantile(shf_age, probs = 0.25), dig = 1),
+                                             q3 = fn(quantile(shf_age, probs = 0.75), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
+                                   pull(out)` and 
+`r rsdata %>% filter(sos_lm_arni14 == "Yes") %>% count(shf_sex) %>%
+  mutate(perc = fn(n / sum(n) * 100, 1)) %>%
+  filter(shf_sex == "Female") %>%
+  pull(perc)`% females.   
 
 ```{r, child = "./src/tab1ss2.Rmd"}
 ```
@@ -329,6 +361,43 @@ For both Figures non-ARNi users are included in the denominator.
 ```{r, child = "./src/overtime.Rmd"}
 ```
 
+## Substudy 2 - NPR population
+
+### Aims
+
+1.	Definition of timeline and characteristics of patients (including concomitant treatments and
+their doses, e.g. ACEi/ARB, SGLT2i, MRA, BB) initiated with ARNi with focus on initiatiation
+during hospitalization vs outpatient care;  
+2.	Evaluation of the current status of implementation of use of sacubitril/valsartan in clinical
+practice (both inpatients/outpatients) 
+
+### Baseline characteristics
+
+First patient in: `r min(nprdata %>% pull(shf_indexdtm))` 
+and last patient in: `r max(nprdata %>% pull(shf_indexdtm))`. 
+The median age (IQR) is `r nprdata %>% summarise(med = fn(median(shf_age), dig = 1),
+                                             q1 = fn(quantile(shf_age, probs = 0.25), dig = 1),
+                                             q3 = fn(quantile(shf_age, probs = 0.75), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
+                                   pull(out)` and 
+`r nprdata %>% count(shf_sex) %>%
+  mutate(perc = fn(n / sum(n) * 100, 1)) %>%
+  filter(shf_sex == "Female") %>%
+  pull(perc)`% females.   
+
+```{r, child = "./src/tab1ss2_npr.Rmd"}
+```
+
+\clearpage
+
+### ARNi use over time
+
+In Figure \ref{fig:overtimenpr} the number of patients that, within 14 days of 
+their inclusion in the NPR population (see definition above), collect an ARNi prescription, are presented. 
+
+```{r, child = "./src/overtime_npr.Rmd"}
+```
+
 \blandscape
 
 ## Substudy 3
@@ -339,6 +408,18 @@ For both Figures non-ARNi users are included in the denominator.
 2.	To assess predictors of ARNi initiation across strata of HF duration 
 
 ### Baseline characteristics
+
+First patient in: `r min(rsdata %>% filter(!is.na(shf_durationhf)) %>% pull(shf_indexdtm))` 
+and last patient in: `r max(rsdata%>% filter(!is.na(shf_durationhf)) %>% pull(shf_indexdtm))`. 
+The median age (IQR) is `r rsdata%>% filter(!is.na(shf_durationhf)) %>% summarise(med = fn(median(shf_age), dig = 1),
+                                             q1 = fn(quantile(shf_age, probs = 0.25), dig = 1),
+                                             q3 = fn(quantile(shf_age, probs = 0.75), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
+                                   pull(out)` and 
+`r rsdata %>% filter(!is.na(shf_durationhf)) %>% count(shf_sex) %>%
+  mutate(perc = fn(n / sum(n) * 100, 1)) %>%
+  filter(shf_sex == "Female") %>%
+  pull(perc)`% females.  
 
 ```{r, child = "./src/tab1ss3.Rmd"}
 ```

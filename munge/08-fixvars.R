@@ -63,21 +63,6 @@ rsdata <- rsdata %>%
       shf_arb == "Yes" | shf_acei == "Yes" ~ "Yes",
       TRUE ~ "No"
     ),
-    sos_com_charlsonci_cat = factor(
-      case_when(
-        sos_com_charlsonci <= 1 ~ 1,
-        sos_com_charlsonci <= 3 ~ 2,
-        sos_com_charlsonci <= 7 ~ 3,
-        sos_com_charlsonci >= 8 ~ 4
-      ),
-      levels = 1:4,
-      labels = c(
-        "0-1",
-        "2-3",
-        "4-7",
-        ">=8"
-      )
-    ),
     sos_timeprevhosphf_cat = factor(
       case_when(
         is.na(sos_timeprevhosphf) ~ 0,
@@ -98,17 +83,6 @@ rsdata <- rsdata %>%
       levels = 0:2,
       labels = c("No", "<=365", ">365")
     ),
-    shf_qol_cat = factor(
-      case_when(
-        shf_qol <= 25 ~ 1,
-        shf_qol <= 50 ~ 2,
-        shf_qol <= 75 ~ 3,
-        shf_qol <= 100 ~ 4,
-      ),
-      levels = 1:4,
-      labels = c("0-25", "26-50", "51-75", "76-100")
-    ),
-
     # Doses
     shf_aceidosetarget = case_when(
       shf_aceisub == "Captopril" ~ shf_aceidose / (50 * 3),
@@ -186,17 +160,15 @@ rsdata <- rsdata %>%
 
     sos_outtime_death30 = sos_outtime_death - 30,
     sos_outtime_death = sos_outtime_death - 14,
-    
     sos_out_deathcvhosphf = ifelse(sos_out_deathcv == "Yes" | sos_out_hosphf == "Yes", "Yes", "No"),
     sos_out_deathcvhosphf30 = ifelse(sos_out_deathcv == "Yes" | sos_out_hosphf30 == "Yes", "Yes", "No"),
-    
     sos_out_countdeathcvhosphf = ifelse(sos_out_deathcv == "Yes",
       sos_out_counthosphf + 1,
       sos_out_counthosphf
     ),
     sos_out_countdeathcvhosphf30 = ifelse(sos_out_deathcv == "Yes",
-                                        sos_out_counthosphf30 + 1,
-                                        sos_out_counthosphf30
+      sos_out_counthosphf30 + 1,
+      sos_out_counthosphf30
     )
   ) %>%
   mutate(across(where(is.character), as.factor))

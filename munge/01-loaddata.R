@@ -8,7 +8,11 @@ meta_variablesadd <- data.frame(
     "shf_rasidosetarget",
     "shf_mradosetarget",
     "shf_bbldosetarget",
-    "shf_sglt2dosetarget"
+    "shf_sglt2dosetarget", 
+    "sos_lm_rasi",
+    "sos_lm_mra",
+    "sos_lm_bbl",
+    "sos_lm_sglt2"
   ),
   "label" = c(
     "Previous ACEi/ARB",
@@ -16,25 +20,20 @@ meta_variablesadd <- data.frame(
     "Target dose ACEi/ARB",
     "Target dose MRA",
     "Target dose Beta-blocker",
-    "Target dose SGLT2i"
+    "Target dose SGLT2i", 
+    "ACEi/ARB",
+    "MRA",
+    "Beta-blocker",
+    "SGLT2i"
   ),
-  "unit" = rep(NA, 6),
-  "valid" = rep(NA, 6)
+  "unit" = rep(NA, 10),
+  "valid" = rep(NA, 10)
 )
 
 meta_variables <- rbind(meta_variables, meta_variablesadd)
 
-load("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm/data/v401/rsdata401.RData")
+load("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm/data/v410/rsdatafull410.RData")
 
 load("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm/data/20220908/patregrsdata.RData")
 
-load("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm/data/20220908/lmswedehf.RData")
-
-lmsel <- lmswedehf %>%
-  mutate(atcneed = stringr::str_detect(ATC, "^(C09A|C09B|C09C|C09D)")) %>%
-  filter(
-    ANTAL >= 0,
-    atcneed
-  )
-
-rm(lmswedehf)
+# LM loaded through data

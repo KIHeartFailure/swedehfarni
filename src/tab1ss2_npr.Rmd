@@ -1,8 +1,8 @@
-```{r tab1ss2, cache=cacheon}
+```{r tab1ss2npr, cache=cacheon}
 tab1 <- print(CreateTableOne(
-  vars = tabvars,
-  strata = "shf_location",
-  data = rsdata %>% filter(sos_lm_arni14 == "Yes")
+  vars = tabvarsnpr,
+  strata = "sos_location",
+  data = nprdata
 ),
 smd = TRUE,
 missing = TRUE,
@@ -27,9 +27,7 @@ tab1 <- tab1 %>%
     var_tmp = str_split(var, " = ", simplify = TRUE)[, 1],
     val_tmp = str_split(var, " = ", simplify = TRUE)[, 2],
     # if recoding or categorizing will still get org label
-    var_tmp2 = str_replace_all(var_tmp, "(_cat2|_cat)", ""),
-    # if shf/sos combination  will still get org label
-    var_tmp2 = str_replace_all(var_tmp2, "shf_sos_com_", "sos_com_")
+    var_tmp2 = str_replace_all(var_tmp, "(_cat2|_cat)", "")
   )
 
 tab1 <- left_join(tab1,
@@ -49,7 +47,7 @@ tab1 <- left_join(tab1,
     )
   )
 
-write.xlsx(tab1, paste0("./output/tabs/Baseline characteristics_substudy2swedehf_", Sys.Date(), ".xlsx"), rowNames = FALSE)
+write.xlsx(tab1, paste0("./output/tabs/Baseline characteristics_substudy2npr_", Sys.Date(), ".xlsx"), rowNames = FALSE)
 
 # footnotes
 tab1 <- tab1 %>%
@@ -68,7 +66,7 @@ colnames(tab1) <- sanitize_text(c("Variable", "Missing (%)", levels(rsdata$shf_l
 footnote(
   default_kable(tab1,
     font_size = 5,
-    caption = "Baseline characteristics - Substudy 2, SwedeHF population",
+    caption = "Baseline characteristics - Substudy 2, NPR population",
     longtable = TRUE,
     escape = FALSE
   ),

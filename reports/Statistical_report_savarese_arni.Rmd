@@ -61,15 +61,12 @@ SHFDB4, https://kiheartfailure.github.io/shfdb4/, v 4.1.0.
 
 ## Inclusion/exclusion criteria
 
-```{r, child = "./src/flowchart.Rmd"}
+```{r flow}
+flow[, 1] <- sanitize_text(flow[, 1])
+footnote(default_kable(flow, caption = "Flowchart", scale_down = F, escape = F),
+         symbol = "If a patient dies immediately after the index visit he or she will not collect a drug prescribed at the index visit and thereby be defined as a ARNi initiation user. Throughout, the index date is moved 14 days forward or 30 days, the latter for substudy 1, 3 groups", threeparttable = T)
+default_kable(flownpr, caption = "Flowchart for NPR", scale_down = F, escape = F)
 ```
-
-```{r, child = "./src/flowchart_npr.Rmd"}
-```
-
-*If a patient dies immediately after the index visit he/she will not collect a drug prescribed at the index visit
-and thereby be defined as a ARNi initiation user. Throughout, the index date is 
-moved 14 days forward or 30 days (the latter for substudy 1, 3 groups).
 
 \clearpage
 

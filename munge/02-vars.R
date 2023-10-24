@@ -99,6 +99,7 @@ tabvars_not_in_mod <- c(
   "shf_ntprobnp",
   "shf_potassium",
   "shf_bmi",
+  "sos_com_renal",
   "sos_com_charlsonci",
   "sos_com_charlsonci_cat",
   "shf_sglt2",

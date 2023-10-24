@@ -34,6 +34,6 @@ meta_variables <- rbind(meta_variables, meta_variablesadd)
 
 load("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm/data/v410/rsdatafull410.RData")
 
-load("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm/data/20220908/patregrsdata.RData")
+load("D:/STATISTIK/Projects/20210525_shfdb4/dm/data/20220908/patregrsdata.RData")
 
 # LM loaded through data

@@ -1,6 +1,5 @@
 ---
 title: 'Statistical report: Implementation, Timing and Modalities of Initiation/Up-Titration of ARNI in a Swedish real world Heart Failure population with Reduced Ejection Fraction'
-subtitle: 'DRAFT'
 author: 'Statistician: Lina Benson'
   
 date: "`r Sys.Date()`"
@@ -17,7 +16,6 @@ nocite: '@*'
 urlcolor: blue
 linkcolor: black
 header-includes:
-   - \usepackage{draftwatermark}
    - \usepackage{subfig}
    - \usepackage{pdflscape}
    - \newcommand{\blandscape}{\begin{landscape}}
@@ -158,8 +156,8 @@ The median age (IQR) is `r rsdata%>% filter(shf_location == "In-patient") %>% su
 
 ### Associations with ARNi use
 
-Odds ratios (95% CI) were estimated using logistic regression with ARNi use as outcome. 
-Variables selected are indicated in Table \ref{tab:tab1ss12}.
+Odds ratios (95% CI) were estimated using logistic regression with ARNi use as outcome 
+with the interaction between HF duration and the respective variable in the model. The variables selected are indicated in Table \ref{tab:tab1ss12}.
 
 ```{r, child = "./src/ortabss12.Rmd"}
 ```

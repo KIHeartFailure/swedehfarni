@@ -1,0 +1,264 @@
+```{r ortablocation, cache=cacheon}
+
+levs <- levels(rsdata %>% pull(shf_location))
+
+modvarslocation <- modvars[!modvars %in% c("shf_location", "sos_timeprevhosphf_cat2")]
+
+for (i in seq_along(modvarslocation)) {
+  modvarstmp <- modvarslocation[modvarslocation != modvarslocation[i]]
+  nlevsivar <- ifelse(is.factor(rsdata %>% pull(!!sym(modvarslocation[i]))),
+    nlevels(rsdata %>% pull(!!sym(modvarslocation[i]))), 2
+  )
+
+  for (j in seq_along(levs)) {
+    # crude
+    ormoduni <- with(imprsdata, glm(
+      formula(paste0(
+        "sos_lm_arni14 == 'Yes' ~ ", modvarslocation[i],
+        " * relevel(shf_location, ref = '", levs[j], "')"
+      )),
+      family = binomial(link = "logit")
+    ))
+
+    sormoduni <- summary(pool(ormoduni))
+
+    # mult
+    ormodadj <- with(imprsdata, glm(
+      formula(paste0(
+        "sos_lm_arni14 == 'Yes' ~ ",
+        modvarslocation[i],
+        " * relevel(shf_location, ref = '", levs[j], "') + ",
+        paste(modvarstmp, collapse = " + ")
+      )),
+      family = binomial(link = "logit")
+    ))
+
+    sormodadj <- summary(pool(ormodadj))
+
+    predstmp <- bind_cols(
+      Variable = as.character(sormoduni$term[2:nlevsivar]),
+      logorcrude = sormoduni$estimate[2:nlevsivar],
+      lcicrude = sormoduni$estimate[2:nlevsivar] - global_z05 * sormoduni$std.error[2:nlevsivar],
+      ucicrude = sormoduni$estimate[2:nlevsivar] + global_z05 * sormoduni$std.error[2:nlevsivar],
+      pcrude = fn(sormoduni$p.value[2:nlevsivar], dig = 3, p = TRUE),
+      pintcrude = fn(last(sormoduni$p.value), dig = 3, p = TRUE),
+      logoradj = sormodadj$estimate[2:nlevsivar],
+      lciadj = sormodadj$estimate[2:nlevsivar] - global_z05 * sormodadj$std.error[2:nlevsivar],
+      uciadj = sormodadj$estimate[2:nlevsivar] + global_z05 * sormodadj$std.error[2:nlevsivar],
+      padj = fn(sormodadj$p.value[2:nlevsivar], dig = 3, p = TRUE),
+      pintadj = fn(last(sormodadj$p.value), dig = 3, p = TRUE)
+    ) %>%
+      mutate(
+        orcicrude = paste0(
+          fn(exp(logorcrude), 2),
+          " (", fn(exp(lcicrude), 2), "-",
+          fn(exp(ucicrude), 2), ")"
+        ),
+        orciadj = paste0(
+          fn(exp(logoradj), 2),
+          " (", fn(exp(lciadj), 2), "-",
+          fn(exp(uciadj), 2), ")"
+        )
+      )
+
+    if (j == 1) {
+      colnames(predstmp) <- paste0(colnames(predstmp), "_1")
+      predstmp2 <<- predstmp
+    }
+    if (j == 2) {
+      colnames(predstmp) <- paste0(colnames(predstmp), "_2")
+      predstmp2 <<- bind_cols(predstmp2, predstmp %>% select(-Variable_2))
+    }
+  }
+
+  if (i == 1) {
+    preds <<- predstmp2
+  } else {
+    preds <<- bind_rows(preds, predstmp2)
+  }
+}
+
+preds <- preds %>%
+  rename(Variable = Variable_1) %>%
+  mutate(across(everything(), str_replace_all, fixed("Yes"), "")) %>%
+  mutate(Variable = str_replace_all(Variable, "shf_sos_com_", "sos_com_"))
+
+preds <- left_join(preds,
+  meta_variables %>%
+    select(variable, label),
+  by = c("Variable" = "variable")
+) %>%
+  mutate(
+    Variable = coalesce(label, Variable)
+  ) %>%
+  mutate(Variable = case_when(
+    Variable == "shf_sexMale" ~ "Male vs female",
+    Variable == "shf_age_cat>=75" ~ "Age (years) >=75 vs < 75",
+    Variable == "shf_locationIn-patient" ~ "In-patient",
+    Variable == "shf_followuplocation_catHospital" ~ "Follow-up hospital vs primary care/other",
+    Variable == "shf_ef<30" ~ "EF (%) <30 vs 30-39",
+    Variable == "shf_durationhf>6mo" ~ "Duration HF (mo) >=6 vs <6",
+    Variable == "shf_nyha_catIII-IV" ~ "NYHA class III-IV vs I-II",
+    Variable == "shf_bmi_cat>=30" ~ "BMI (kg/m2) >=30 vs <30",
+    Variable == "shf_map_cat>90" ~ "MAP (mmHg) >90 vs <=90",
+    Variable == "shf_heartrate_cat>70" ~ "Heart rate (beats/min) >70 vs <=70",
+    Variable == "shf_gfrckdepi_cat<60" ~ "eGFR (mL/min/1.73 m²) <60 vs >=60",
+    Variable == "shf_potassium_catHyperkalemia" ~ "Hyperkalemia vs normakalemia",
+    Variable == "shf_potassium_catHypokalemia" ~ "Hypokalemia vs normakalemia",
+    Variable == "shf_ntprobnp_cat>=median" ~ "NT-proBNP (pg/ml) >=median vs <median",
+    Variable == "shf_device_catCRT/ICD" ~ "CRT/ICD",
+    Variable == "scb_famtypeLiving alone" ~ "Living alone vs cohabitating",
+    Variable == "scb_educationSecondary school" ~ "Secondary vs compulsory school",
+    Variable == "scb_educationUniversity" ~ "University vs compulsory school",
+    Variable == "scb_dispincome_cat>=median" ~ "Income >=median vs <median",
+    Variable == "shf_indexyear" ~ "Year of inclusion",
+    Variable == "sos_lm_previousrasi" ~ "Previous ACEi/ARB",
+    TRUE ~ Variable
+  ))
+
+
+predsprint <- preds %>%
+  select(
+    Variable,
+    orcicrude_1, pcrude_1, orcicrude_2, pcrude_2, pintcrude_2,
+    orciadj_1, padj_1, orciadj_2, padj_2, pintadj_2
+  )
+
+colnames(predsprint) <- c(
+  "Variable",
+  rep(c(
+    rep(c("OR (95% CI)", "p-value"), 2),
+    "p-value interaction"
+  ), 2)
+)
+
+write.xlsx(predsprint, paste0(
+  "./output/tabs/Associations between ARNi use and characteristics_location_", Sys.Date(), ".xlsx"
+), rowNames = FALSE, overwrite = TRUE)
+
+default_kable(predsprint,
+  font_size = 6,
+  caption = "Associations between ARNi use and characteristics by Location",
+  escape = T
+) %>%
+  add_header_above(c(" " = 1, "Out-patient" = 2, "In-patient" = 2, " " = 1, "Out-patient" = 2, "In-patient" = 2, " " = 1)) %>%
+  add_header_above(c(" " = 1, "Crude" = 5, "Adjusted" = 5))
+```
+
+```{r orforestlocation, cache=cacheon, dependson=c("ortablocation"), fig.width=7, fig.height=10, fig.cap="Adjusted associations between ARNi use and characteristics by location"}
+
+forestdata <- preds %>%
+  select(Variable, contains("adj")) %>%
+  mutate(across(contains(c("logor", "lci", "uci")), as.numeric))
+
+forestdata <- forestdata %>%
+  mutate(
+    Variable = str_replace_all(Variable, ">=", "\u2265"),
+    Variable = str_replace_all(Variable, "<=", "\u2264")
+  ) %>%
+  mutate(
+    order = n():1 - 1,
+    p_1num = as.numeric(padj_1),
+    p_2num = as.numeric(padj_2),
+    cols_1 = if_else(is.na(p_1num) | p_1num < 0.05, global_cols[1], global_cols[5]),
+    cols_2 = if_else(is.na(p_2num) | p_2num < 0.05, global_cols[1], global_cols[5]),
+  )
+
+minmy <- round(exp(min(c(forestdata$lciadj_1, forestdata$lciadj_2), na.rm = T)), 2)
+maxmy <- ceiling(exp(max(c(forestdata$uciadj_1, forestdata$uciadj_2), na.rm = T)))
+
+add1 <- 4.25
+cextext <- 0.6
+
+# c(bottom, left, top, right)
+par(mar = c(3, 18.5, 0, 0) + 0.2)
+
+gplots::plotCI(
+  x = forestdata$logoradj_1, y = forestdata$order,
+  li = forestdata$lciadj_1,
+  ui = forestdata$uciadj_1,
+  err = "x",
+  cex = 0.6,
+  xlim = c(
+    log(minmy),
+    log(maxmy) + add1
+  ),
+  xlab = "",
+  ylim = c(1, nrow(forestdata)),
+  axes = FALSE,
+  ylab = "",
+  main = NA,
+  pch = 22,
+  pt.bg = forestdata$cols_1,
+  col = forestdata$cols_1,
+  lwd = .6,
+  gap = 0,
+  sfrac = 0.002
+)
+
+gplots::plotCI(
+  add = TRUE,
+  x = forestdata$logoradj_2 + add1,
+  y = forestdata$order,
+  li = forestdata$lciadj_2 + add1,
+  ui = forestdata$uciadj_2 + add1,
+  err = "x",
+  cex = 0.6,
+  pch = 22,
+  pt.bg = forestdata$cols_2,
+  col = forestdata$cols_2,
+  lwd = .6,
+  gap = 0,
+  sfrac = 0.002
+)
+
+abline(v = log(1), lty = 3, col = "grey")
+abline(v = log(1) + add1, lty = 3, col = "grey")
+
+axis(1,
+  cex.axis = cextext, at = log(c(minmy, 1, maxmy)),
+  labels = c(minmy, 1, maxmy), gap.axis = 0.000001
+)
+axis(1,
+  cex.axis = cextext, at = log(c(minmy, 1, maxmy)) + add1,
+  labels = c(minmy, 1, maxmy), gap.axis = 0.000001
+)
+
+axis(2,
+  at = forestdata$order,
+  labels = forestdata$Variable,
+  cex.axis = cextext, tick = FALSE, las = 2, line = 17.5, hadj = 0
+)
+
+axis(2,
+  at = nrow(forestdata),
+  labels = "Out-patient",
+  cex.axis = cextext, tick = FALSE, las = 2, line = 6, hadj = 0.5, font = 2
+)
+axis(2,
+  at = forestdata$order,
+  labels = forestdata$orciadj_1,
+  cex.axis = cextext, tick = FALSE, las = 2, line = 6, hadj = 0.5
+)
+axis(2,
+  at = nrow(forestdata),
+  labels = "In-patient",
+  cex.axis = cextext, tick = FALSE, las = 2, line = 1.5, hadj = 0.5, font = 2
+)
+axis(2,
+  at = forestdata$order,
+  labels = forestdata$orciadj_2,
+  cex.axis = cextext, tick = FALSE, las = 2, line = 1.5, hadj = 0.5
+)
+
+axis(2,
+  at = nrow(forestdata) + 1,
+  labels = "Adjusted OR (95% CI)",
+  cex.axis = cextext, tick = FALSE, las = 2, line = (6 + 1.5) / 2, hadj = 0.5, font = 2
+)
+
+axis(1,
+  at = (log(maxmy) + log(minmy)) / 2 + add1 / 2, cex.axis = cextext,
+  labels = "Adjusted OR (95% CI)", line = 1, tick = FALSE
+)
+```

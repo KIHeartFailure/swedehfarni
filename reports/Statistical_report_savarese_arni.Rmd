@@ -478,6 +478,28 @@ The median (min-max) follow-up is
 
 \clearpage
 
+\blandscape
+
+## Ad hoc analyses Location
+
+### Baseline characteristics
+
+```{r, child = "./src/tab1location.Rmd"}
+```
+
+\elandscape
+
+### Associations with ARNi use
+
+Odds ratios (95% CI) were estimated using logistic regression with ARNi use as outcome. 
+Separate logistic regressions were estimated for location strata. Variables 
+selected are indicated in Table \ref{tab:tab1location}.
+
+```{r, child = "./src/ortablocation.Rmd"}
+```
+
+\clearpage
+
 # Reproducibility
 
 ## R session information {#sessioninfo}

@@ -24,7 +24,7 @@ tab1hf1 <- print(CreateTableOne(
 smd = TRUE,
 missing = FALSE,
 printToggle = FALSE,
-nonnormal = tabvarspop3,
+nonnormal = tabvarspop1,
 catDigits = 1,
 contDigits = 1,
 noSpaces = TRUE,
@@ -34,14 +34,14 @@ tab1hf1 <- as_tibble(cbind(var = rownames(tab1hf1), tab1hf1)) %>%
   select(-test)
 
 tab1hf2 <- print(CreateTableOne(
-  vars = tabvarspop3,
+  vars = tabvarspop1,
   strata = "sos_lm_arni14",
   data = rsdata %>% filter(shf_location == "In-patient")
 ),
 smd = TRUE,
 missing = FALSE,
 printToggle = FALSE,
-nonnormal = tabvarspop3,
+nonnormal = tabvarspop1,
 catDigits = 1,
 contDigits = 1,
 noSpaces = TRUE,

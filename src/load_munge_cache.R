@@ -28,6 +28,8 @@ ProjectTemplate::cache("rsdatarec")
 ProjectTemplate::cache("rsdatarecpop13")
 
 ProjectTemplate::cache("overtime")
+ProjectTemplate::cache("overtime_sens")
+ProjectTemplate::cache("overtime_senscomp")
 
 ProjectTemplate::cache("tabvars")
 ProjectTemplate::cache("tabvarspop1")

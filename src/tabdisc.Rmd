@@ -1,0 +1,142 @@
+```{r tabdiscrs, cache=cacheon}
+fitrs <- survfit(Surv(disctime, disc == 1) ~ 1,
+  data = rsdata %>% filter(sos_lm_arni14 == "Yes")
+)
+srs <- summary(fitrs, times = round(seq(365.25 / 2, 365.25 * 3.5, 365.25 / 2)), extend = T)
+tabrs <- tibble(
+  time.days = srs$time,
+  n.risk = srs$n.risk,
+  percent.discontinuation = fn((1 - srs$surv) * 100, 1),
+  lower.ci = fn((1 - srs$upper) * 100, 1),
+  upper.ci = fn((1 - srs$lower) * 100, 1)
+)
+
+default_kable(tabrs,
+  caption = "Discontinuation - SwedeHF",
+  scale_down = F
+)
+```
+
+```{r tabdiscrshfdur, cache=cacheon}
+fitrs <- survfit(Surv(disctime, disc == 1) ~ shf_durationhf,
+  data = rsdata %>% filter(sos_lm_arni14 == "Yes")
+)
+p <- survdiff(Surv(disctime, disc == 1) ~ shf_durationhf,
+  data = rsdata %>% filter(sos_lm_arni14 == "Yes")
+)
+
+srs <- summary(fitrs, times = round(seq(365.25 / 2, 365.25 * 3.5, 365.25 / 2)), extend = T)
+tabrs <- tibble(
+  time.days = srs$time,
+  n.risk = srs$n.risk,
+  percent.discontinuation = fn((1 - srs$surv) * 100, 1),
+  lower.ci = fn((1 - srs$upper) * 100, 1),
+  upper.ci = fn((1 - srs$lower) * 100, 1),
+  strata = srs$strata,
+  p.value = NA
+)
+
+tabrs <- tabrs %>% add_row(p.value = fn(p$pvalue, dig = 3, p = T), .before = 1)
+default_kable(tabrs,
+  caption = "Discontinuation by HF duration - SwedeHF",
+  scale_down = F
+)
+```
+
+```{r tabdiscrslocation, cache=cacheon}
+fitrs <- survfit(Surv(disctime, disc == 1) ~ shf_location,
+  data = rsdata %>% filter(sos_lm_arni14 == "Yes")
+)
+p <- survdiff(Surv(disctime, disc == 1) ~ shf_location,
+  data = rsdata %>% filter(sos_lm_arni14 == "Yes")
+)
+
+srs <- summary(fitrs, times = round(seq(365.25 / 2, 365.25 * 3.5, 365.25 / 2)), extend = T)
+tabrs <- tibble(
+  time.days = srs$time,
+  n.risk = srs$n.risk,
+  percent.discontinuation = fn((1 - srs$surv) * 100, 1),
+  lower.ci = fn((1 - srs$upper) * 100, 1),
+  upper.ci = fn((1 - srs$lower) * 100, 1),
+  strata = srs$strata,
+  p.value = NA
+)
+
+tabrs <- tabrs %>% add_row(p.value = fn(p$pvalue, dig = 3, p = T), .before = 1)
+default_kable(tabrs,
+  caption = "Discontinuation by location - SwedeHF",
+  scale_down = F
+)
+```
+
+```{r tabdiscrstimehosp, cache=cacheon}
+fitrs <- survfit(Surv(disctime, disc == 1) ~ sos_lm_arni3,
+  data = rsdata %>% filter(sos_lm_arni3 != ">90 days/No")
+)
+p <- survdiff(Surv(disctime, disc == 1) ~ sos_lm_arni3,
+  data = rsdata %>% filter(sos_lm_arni3 != ">90 days/No")
+)
+
+srs <- summary(fitrs, times = round(seq(365.25 / 2, 365.25 * 3.5, 365.25 / 2)), extend = T)
+tabrs <- tibble(
+  time.days = srs$time,
+  n.risk = srs$n.risk,
+  percent.discontinuation = fn((1 - srs$surv) * 100, 1),
+  lower.ci = fn((1 - srs$upper) * 100, 1),
+  upper.ci = fn((1 - srs$lower) * 100, 1),
+  strata = srs$strata,
+  p.value = NA
+)
+
+tabrs <- tabrs %>% add_row(p.value = fn(p$pvalue, dig = 3, p = T), .before = 1)
+default_kable(tabrs,
+  caption = "Discontinuation by location - SwedeHF",
+  scale_down = F
+)
+```
+
+```{r tabdiscnpr, cache=cacheon}
+fitnpr <- survfit(Surv(disctime, disc == 1) ~ 1,
+  data = nprdata %>% filter(sos_lm_arni14 == "Yes")
+)
+snpr <- summary(fitnpr, times = round(seq(365.25 / 2, 365.25 * 3.5, 365.25 / 2)), extend = T)
+
+tabnpr <- tibble(
+  time.days = snpr$time,
+  n.risk = snpr$n.risk,
+  percent.discontinuation = fn((1 - snpr$surv) * 100, 1),
+  lower.ci = fn((1 - snpr$upper) * 100, 1),
+  upper.ci = fn((1 - snpr$lower) * 100, 1)
+)
+
+default_kable(tabnpr,
+  caption = "Discontinuation - NPR",
+  scale_down = F
+)
+```
+
+```{r tabdiscnprlocation, cache=cacheon}
+fitnpr <- survfit(Surv(disctime, disc == 1) ~ sos_location,
+  data = nprdata %>% filter(sos_lm_arni14 == "Yes")
+)
+p <- survdiff(Surv(disctime, disc == 1) ~ sos_location,
+  data = nprdata %>% filter(sos_lm_arni14 == "Yes")
+)
+
+snpr <- summary(fitnpr, times = round(seq(365.25 / 2, 365.25 * 3.5, 365.25 / 2)), extend = T)
+tabnpr <- tibble(
+  time.days = snpr$time,
+  n.risk = snpr$n.risk,
+  percent.discontinuation = fn((1 - snpr$surv) * 100, 1),
+  lower.ci = fn((1 - snpr$upper) * 100, 1),
+  upper.ci = fn((1 - snpr$lower) * 100, 1),
+  strata = snpr$strata,
+  p.value = NA
+)
+
+tabnpr <- tabnpr %>% add_row(p.value = fn(p$pvalue, dig = 3, p = T), .before = 1)
+default_kable(tabnpr,
+  caption = "Discontinuation by location - NPR",
+  scale_down = F
+)
+```

@@ -1,5 +1,5 @@
 
-meta_variables <- read.xlsx("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm/metadata/meta_variables.xlsx", sheet = "Sheet 1")
+meta_variables <- read.xlsx("F:/STATISTIK/Projects/20210525_shfdb4/dm/metadata/meta_variables.xlsx", sheet = "Sheet 1")
 meta_variables <- meta_variables %>% select(-`description/comment`)
 meta_variablesadd <- data.frame(
   "variable" = c(
@@ -32,8 +32,8 @@ meta_variablesadd <- data.frame(
 
 meta_variables <- rbind(meta_variables, meta_variablesadd)
 
-load("C:/Users/Lina/STATISTIK/Projects/20210525_shfdb4/dm/data/v410/rsdatafull410.RData")
+load("F:/STATISTIK/Projects/20210525_shfdb4/dm/data/v410/rsdatafull410.RData")
 
-load("D:/STATISTIK/Projects/20210525_shfdb4/dm/data/20220908/patregrsdata.RData")
+load("F:/STATISTIK/Projects/20210525_shfdb4/dm/data/20220908/patregrsdata.RData")
 
 # LM loaded through data

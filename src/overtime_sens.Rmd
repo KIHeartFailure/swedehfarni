@@ -1,0 +1,172 @@
+```{r overtimesens, cache = cacheon, fig.cap = "ARNi overtime - Sensitivity", fig.show='hold', out.width="50%", fig.subcap=c('Complete case', 'Missing assumed normal'), fig.ncol=2}
+
+cexmy <- 1.5
+# c(bottom, left, top, right) default c(5, 4, 4, 2) + 0.1.
+par(mar = c(4, 4, .5, 0.5) + 0.1)
+
+overtime_senscomp <- overtime_senscomp %>%
+  group_by(pop) %>%
+  mutate(count = 1:n()) %>%
+  ungroup()
+
+plot(overtime_senscomp %>% filter(pop == "All") %>% pull(count),
+  overtime_senscomp %>% filter(pop == "All") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[1],
+  lwd = 3,
+  cex = 1.5,
+  axes = FALSE,
+  ylim = c(0, 35),
+  xlim = c(1, max(overtime_senscomp$count) + .1),
+  ylab = "Percent",
+  xlab = "Year",
+  cex.lab = cexmy
+)
+# text(overtime %>% filter(pop == "All") %>% pull(count),
+#  overtime %>% filter(pop == "All") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "All") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+matplot(overtime_senscomp %>% filter(pop == "In-patient") %>% pull(count),
+  overtime_senscomp %>% filter(pop == "In-patient") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[3],
+  lwd = 3,
+  cex = 1.5,
+  add = T
+)
+# text(overtime %>% filter(pop == "In-patient") %>% pull(count),
+#  overtime %>% filter(pop == "In-patient") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "In-patient") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+matplot(overtime_senscomp %>% filter(pop == "Out-patient") %>% pull(count),
+  overtime_senscomp %>% filter(pop == "Out-patient") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[5],
+  lwd = 3,
+  cex = 1.5,
+  add = T
+)
+# text(overtime %>% filter(pop == "Out-patient") %>% pull(count),
+#  overtime %>% filter(pop == "Out-patient") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "Out-patient") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+legend(
+  x = 1.1, y = 35, c("Overall", "In-patient", "Out-patient"),
+  col = global_cols[c(1, 3, 5)], lwd = 2, pch = 19, bty = "n",
+  cex = cexmy
+)
+
+axis(1, c(0, overtime_senscomp %>% filter(pop == "All") %>% pull(count)),
+  c(NA, overtime_senscomp %>% filter(pop == "All") %>% pull(year)),
+  cex.axis = cexmy
+)
+
+axis(2, c(-100, seq(0, 30, 10), 35), c(NA, seq(0, 30, 10), 100), las = 2, cex.axis = cexmy)
+plotrix::axis.break(2, 32.5, style = "slash")
+
+# sens missing assumed normal
+
+par(mar = c(4, 4, .5, 0.5) + 0.1)
+
+overtime_sens <- overtime_sens %>%
+  group_by(pop) %>%
+  mutate(count = 1:n()) %>%
+  ungroup()
+
+plot(overtime_sens %>% filter(pop == "All") %>% pull(count),
+  overtime_sens %>% filter(pop == "All") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[1],
+  lwd = 3,
+  cex = 1.5,
+  axes = FALSE,
+  ylim = c(0, 35),
+  xlim = c(1, max(overtime_sens$count) + .1),
+  ylab = "Percent",
+  xlab = "Year",
+  cex.lab = cexmy
+)
+# text(overtime %>% filter(pop == "All") %>% pull(count),
+#  overtime %>% filter(pop == "All") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "All") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+matplot(overtime_sens %>% filter(pop == "In-patient") %>% pull(count),
+  overtime_sens %>% filter(pop == "In-patient") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[3],
+  lwd = 3,
+  cex = 1.5,
+  add = T
+)
+# text(overtime %>% filter(pop == "In-patient") %>% pull(count),
+#  overtime %>% filter(pop == "In-patient") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "In-patient") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+matplot(overtime_sens %>% filter(pop == "Out-patient") %>% pull(count),
+  overtime_sens %>% filter(pop == "Out-patient") %>% pull(percent),
+  type = "b",
+  pch = 19,
+  lty = 1,
+  col = global_cols[5],
+  lwd = 3,
+  cex = 1.5,
+  add = T
+)
+# text(overtime %>% filter(pop == "Out-patient") %>% pull(count),
+#  overtime %>% filter(pop == "Out-patient") %>% pull(percent) + 4,
+#  paste(fn(overtime %>% filter(pop == "Out-patient") %>% pull(percent), 0), "%"),
+#  cex = cexmy
+# )
+
+legend(
+  x = 1.1, y = 35, c("Overall", "In-patient", "Out-patient"),
+  col = global_cols[c(1, 3, 5)], lwd = 2, pch = 19, bty = "n",
+  cex = cexmy
+)
+
+axis(1, c(0, overtime_sens %>% filter(pop == "All") %>% pull(count)),
+  c(NA, overtime_sens %>% filter(pop == "All") %>% pull(year)),
+  cex.axis = cexmy
+)
+
+axis(2, c(-100, seq(0, 30, 10), 35), c(NA, seq(0, 30, 10), 100), las = 2, cex.axis = cexmy)
+plotrix::axis.break(2, 32.5, style = "slash")
+```
+
+```{r overtimetabsens, cache = cacheon}
+overtime_senscomp <- overtime_senscomp %>%
+  mutate(dn = paste0(num, "/", den, " (", fn(percent, 1), "%)")) %>%
+  select(year, pop, dn) %>%
+  rename(Year = year) %>%
+  pivot_wider(names_from = pop, values_from = dn)
+
+default_kable(overtime_senscomp, caption = "Numbers for Figure - Complete case", scale_down = F)
+
+overtime_sens <- overtime_sens %>%
+  mutate(dn = paste0(num, "/", den, " (", fn(percent, 1), "%)")) %>%
+  select(year, pop, dn) %>%
+  rename(Year = year) %>%
+  pivot_wider(names_from = pop, values_from = dn)
+
+default_kable(overtime_sens, caption = "Numbers for Figure - Missing assumed normal", scale_down = F)
+```

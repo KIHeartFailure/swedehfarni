@@ -1,5 +1,3 @@
-
-
 # Inclusion/exclusion criteria --------------------------------------------------------
 
 flow <- c("Posts in SHFDB4", nrow(rsdata))
@@ -43,10 +41,31 @@ flow <- rbind(flow, c("Hospitalized (substudy 1, 2 groups)", nrow(rsdata %>%
 rsdata <- rsdata %>%
   mutate(pop13 = sos_outtime_death > 30 & shf_location %in% c("In-patient"))
 flow <- rbind(flow, c("Hospitalized and >30 days follow-up (substudy 1, 3 groups)*", nrow(rsdata %>%
-                                                                       filter(pop13))))
+  filter(pop13))))
 
 flow <- rbind(flow, c("ARNi users (substudy 2)", nrow(rsdata %>% filter(sos_lm_arni14 == "Yes"))))
 
 flow <- rbind(flow, c("Non-missing HF duration (substudy 3)", nrow(rsdata %>% filter(!is.na(shf_durationhf)))))
+
+# sensitivity analyses
+
+rsdata <- rsdata %>%
+  mutate(
+    senscomp = case_when(
+      is.na(shf_gfrckdepi) | is.na(shf_bpsys) | is.na(shf_potassium) ~ FALSE,
+      shf_gfrckdepi >= 30 & shf_bpsys >= 100 & shf_potassium <= 5.5 ~ TRUE,
+      TRUE ~ FALSE
+    ),
+    sens = case_when(
+      (shf_gfrckdepi >= 30 | is.na(shf_gfrckdepi)) &
+        (shf_bpsys >= 100 | is.na(shf_bpsys)) &
+        (shf_potassium <= 5.5 | is.na(shf_potassium)) ~ TRUE,
+      TRUE ~ FALSE
+    )
+  )
+
+flow <- rbind(flow, c("Sensitivity eGFR >=30 & Sys bp >=100 & K <=5.5 (missing not included)", nrow(rsdata %>% filter(senscomp))))
+
+flow <- rbind(flow, c("Sensitivity eGFR >=30 & Sys bp >=100 & K <=5.5 (missing assumed normal)", nrow(rsdata %>% filter(sens))))
 
 colnames(flow) <- c("Criteria", "N")

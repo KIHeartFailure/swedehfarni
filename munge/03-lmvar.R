@@ -1,4 +1,3 @@
-
 rsdata <- rsdatafull410 %>%
   filter(casecontrol == "Case SwedeHF")
 
@@ -11,7 +10,7 @@ rm(rsdatafull410)
 
 lmtmp <- left_join(
   rsdata %>%
-    select(lopnr, shf_indexdtm),
+    select(lopnr, shf_indexdtm, censdtm),
   lmarni,
   by = "lopnr"
 )
@@ -41,8 +40,10 @@ rsdata <- create_medvar(
 )
 
 lmtmp2 <- lmtmp %>%
-  mutate(diff = as.numeric(EDATUM - shf_indexdtm), 
-         atcneed = str_detect(ATC, global_atcarni)) %>%
+  mutate(
+    diff = as.numeric(EDATUM - shf_indexdtm),
+    atcneed = str_detect(ATC, global_atcarni)
+  ) %>%
   filter(diff >= 0, diff <= 90, atcneed) %>%
   mutate(sos_lm_arni3 = case_when(
     diff >= 0 & diff <= 14 ~ 1,
@@ -79,12 +80,50 @@ rsdata <- create_medvar(
   valsclass = "fac"
 )
 
+# discontinuation
+
+lmtmp2 <- lmtmp %>%
+  mutate(diff = as.numeric(EDATUM - shf_indexdtm)) %>%
+  filter(diff >= 0 & str_detect(ATC, global_atcarni) & EDATUM <= censdtm) %>%
+  select(lopnr, shf_indexdtm, censdtm, EDATUM, ATC)
+
+lmtmp3 <- lmtmp2 %>%
+  group_by(lopnr) %>%
+  arrange(EDATUM) %>%
+  mutate(
+    c = 1:n(),
+    lagEDATUM = lag(EDATUM),
+    diff = as.numeric(EDATUM - lagEDATUM),
+    diffcens = as.numeric(censdtm - EDATUM),
+    discdtm = case_when(
+      c == n() & diffcens >= 152 ~ EDATUM + 90,
+      diff > 152 & !c %in% c(1) ~ lagEDATUM + 90
+    ),
+  ) %>%
+  ungroup() %>%
+  arrange(lopnr, EDATUM) %>%
+  select(lopnr, discdtm)
+
+lmtmp4 <- lmtmp3 %>%
+  filter(!is.na(discdtm)) %>%
+  group_by(lopnr) %>%
+  arrange(discdtm) %>%
+  slice(1) %>%
+  ungroup()
+
+rsdata <- left_join(rsdata, lmtmp4, by = "lopnr") %>%
+  mutate(
+    disc = if_else(!is.na(discdtm), 1, 0),
+    tmp_sos_outtime_death = sos_outtime_death - 14,
+    disctime = if_else(!is.na(discdtm), as.numeric(discdtm - shf_indexdtm), tmp_sos_outtime_death)
+  ) %>%
+  select(-tmp_sos_outtime_death)
 
 # NPR ---------------------------------------------------------------------
 
 lmtmp <- left_join(
   nprdata %>%
-    select(lopnr, shf_indexdtm),
+    select(lopnr, shf_indexdtm, censdtm),
   lmarni,
   by = "lopnr"
 )
@@ -142,6 +181,47 @@ nprdata <- create_medvar(
   metatime = "-5mo-14days",
   valsclass = "fac"
 )
+
+# discontinuation
+
+lmtmp2 <- lmtmp %>%
+  mutate(diff = as.numeric(EDATUM - shf_indexdtm)) %>%
+  filter(diff >= 0 & str_detect(ATC, global_atcarni) & EDATUM <= censdtm) %>%
+  select(lopnr, shf_indexdtm, censdtm, EDATUM, ATC)
+
+lmtmp3 <- lmtmp2 %>%
+  group_by(lopnr) %>%
+  arrange(EDATUM) %>%
+  mutate(
+    c = 1:n(),
+    lagEDATUM = lag(EDATUM),
+    diff = as.numeric(EDATUM - lagEDATUM),
+    diffcens = as.numeric(censdtm - EDATUM),
+    discdtm = case_when(
+      c == n() & diffcens >= 152 ~ EDATUM + 90,
+      diff > 152 & !c %in% c(1) ~ lagEDATUM + 90
+    ),
+  ) %>%
+  ungroup() %>%
+  arrange(lopnr, EDATUM) %>%
+  select(lopnr, discdtm)
+
+lmtmp4 <- lmtmp3 %>%
+  filter(!is.na(discdtm)) %>%
+  group_by(lopnr) %>%
+  arrange(discdtm) %>%
+  slice(1) %>%
+  ungroup()
+
+nprdata <- left_join(nprdata, lmtmp4, by = "lopnr") %>%
+  mutate(
+    disc = if_else(!is.na(discdtm) & sos_lm_arni14 == "Yes", 1, 0),
+    tmp_sos_outtime_death = sos_outtime_death - 14,
+    disctime = if_else(!is.na(discdtm), as.numeric(discdtm - shf_indexdtm), tmp_sos_outtime_death)
+  ) %>%
+  select(-tmp_sos_outtime_death)
+
+
 
 metalm[, "Register"] <- "Prescribed Drug Register"
 metalm <- metalm[c(1, 2, 3, 6, 7, 8, 9), ]

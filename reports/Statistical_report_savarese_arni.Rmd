@@ -500,6 +500,32 @@ selected are indicated in Table \ref{tab:tab1location}.
 
 \clearpage
 
+## Analyses Revision
+
+### Sensitivity analyses 
+
+Patients with SBP <100 mmHg, eGFR <30 or K>5.5 were excluded. In a complete case analyses patients with missing eGFR, SBP or K were excluded (assumed to be abnormal) 
+and in a "missing asssumed normal" analyses missing SBP was assumed to be >=100, missing eGFR was assumed to be >=30 and missing K was assumed to be <=5.5.
+
+```{r, child = "./src/overtime_sens.Rmd"}
+```
+
+\clearpage
+
+```{r, child = "./src/desktab_sens.Rmd"}
+```
+
+### Discontinuation
+
+If a patient didn't collect a new prescription within 5 months following the previous prescription a patients was assumed to be discontinued. 
+The time of discontinuation was then assumed to be the last prescription + 3 months. 
+The discontinuation rate was estimated using the Kaplan-Meier method and estimated at the specified time points, censoring at death or emigration from Sweden. Differences between subgroups are tested with the log-rank test. 
+
+```{r, child = "./src/tabdisc.Rmd"}
+```
+
+\clearpage
+
 # Reproducibility
 
 ## R session information {#sessioninfo}

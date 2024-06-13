@@ -1,0 +1,115 @@
+```{r desktabsens1, cache=cacheon}
+tab1 <- rsdata %>%
+  filter(senscomp & pop13) %>%
+  count(sos_lm_arni3) %>%
+  mutate(
+    p = n / sum(n) * 100,
+    np = paste0(n, " (", fn(p, 1), "%)"),
+    type = "Complete case"
+  ) %>%
+  select(type, sos_lm_arni3, np) %>%
+  pivot_wider(names_from = sos_lm_arni3, values_from = np)
+
+
+tab2 <- rsdata %>%
+  filter(sens & pop13) %>%
+  count(sos_lm_arni3) %>%
+  mutate(
+    p = n / sum(n) * 100,
+    np = paste0(n, " (", fn(p, 1), "%)"),
+    type = "Missing assumed normal"
+  ) %>%
+  select(type, sos_lm_arni3, np) %>%
+  pivot_wider(names_from = sos_lm_arni3, values_from = np)
+
+tab <- bind_rows(tab1, tab2)
+
+default_kable(tab,
+  caption = "Patients starting at the different time points (<=14 days, 15-90 days and >90 days) (Hospitalized patients with > 30 days follow-up)",
+  scale_down = F
+)
+```
+
+```{r desktabsens2, cache=cacheon}
+tab1 <- rsdata %>%
+  filter(senscomp & !is.na(shf_location)) %>%
+  group_by(sos_lm_arni14) %>%
+  count(shf_location) %>%
+  mutate(
+    p = n / sum(n) * 100,
+    np = paste0(n, " (", fn(p, 1), "%)"),
+    type = "Complete case"
+  ) %>%
+  ungroup() %>%
+  select(type, sos_lm_arni14, shf_location, np) %>%
+  pivot_wider(names_from = c(sos_lm_arni14, shf_location), values_from = np)
+
+
+tab2 <- rsdata %>%
+  filter(sens & !is.na(shf_location)) %>%
+  group_by(sos_lm_arni14) %>%
+  count(shf_location) %>%
+  mutate(
+    p = n / sum(n) * 100,
+    np = paste0(n, " (", fn(p, 1), "%)"),
+    type = "Missing assumed normal"
+  ) %>%
+  ungroup() %>%
+  select(type, sos_lm_arni14, shf_location, np) %>%
+  pivot_wider(names_from = c(sos_lm_arni14, shf_location), values_from = np)
+
+tab <- bind_rows(tab1, tab2)
+
+tab <- tab %>%
+  select(type, `No_Out-patient`, `Yes_Out-patient`, `No_In-patient`, `Yes_In-patient`)
+
+colnames(tab) <- c("type", rep(c("No ARNi", "ARNi"), 2))
+
+default_kable(tab,
+  caption = "Patients initiating arni based on Location",
+  scale_down = F
+) %>%
+  add_header_above(c(" " = 1, "Out-patient" = 2, "In-patient" = 2))
+```
+
+```{r desktabsens3, cache=cacheon}
+tab1 <- rsdata %>%
+  filter(senscomp & !is.na(shf_durationhf)) %>%
+  group_by(sos_lm_arni14) %>%
+  count(shf_durationhf) %>%
+  mutate(
+    p = n / sum(n) * 100,
+    np = paste0(n, " (", fn(p, 1), "%)"),
+    type = "Complete case"
+  ) %>%
+  ungroup() %>%
+  select(type, sos_lm_arni14, shf_durationhf, np) %>%
+  pivot_wider(names_from = c(sos_lm_arni14, shf_durationhf), values_from = np)
+
+
+tab2 <- rsdata %>%
+  filter(sens & !is.na(shf_durationhf)) %>%
+  group_by(sos_lm_arni14) %>%
+  count(shf_durationhf) %>%
+  mutate(
+    p = n / sum(n) * 100,
+    np = paste0(n, " (", fn(p, 1), "%)"),
+    type = "Missing assumed normal"
+  ) %>%
+  ungroup() %>%
+  select(type, sos_lm_arni14, shf_durationhf, np) %>%
+  pivot_wider(names_from = c(sos_lm_arni14, shf_durationhf), values_from = np)
+
+tab <- bind_rows(tab1, tab2)
+
+tab <- tab %>%
+  select(type, `No_<6mo`, `Yes_<6mo`, `No_>6mo`, `Yes_>6mo`)
+
+colnames(tab) <- c("type", rep(c("No ARNi", "ARNi"), 2))
+
+default_kable(tab,
+  caption = "Patients initiating arni based on HF duration",
+  scale_down = F
+) %>%
+  add_header_above(c(" " = 1, "HF duration <6 mo" = 2, "HF duration >=6 mo" = 2))
+```
